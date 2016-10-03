@@ -1,6 +1,8 @@
 #ifndef _POINT3D_H_
 #define _POINT3D_H_
 
+#include <stdio.h>
+
 typedef struct
 {
 	double x;
@@ -8,10 +10,53 @@ typedef struct
 	double z;
 } point3d_t;
 
+/*
+ * point3d_initialize - returns a new instance of a 3D point, with all coordinates set to 0
+ * @return - the new 3D point
+ */
 point3d_t *point3d_initialize(void);
+
+/*
+ * point3d_initialize_with_coords - returns a new 3D point, initialized to the given coordinates
+ * @param x - the x coordiante
+ * @param y - the y coordinate
+ * @param z - the z coordinate
+ * @return - a new point3d_t with coordinates (x, y, z)
+ */
 point3d_t *point3d_initialize_with_coords(double x, double y, double z);
+
+/*
+ * point3d_copy - copies an existing point and returns a new instance
+ * @param orig - the point to copy
+ * @return - a new copy of the original point
+ */
+point3d_t *point3d_copy(point3d_t *orig);
+
+/*
+ * point3d_uninitialize - uninitializes a 3D point, freeing associated memory
+ * @param point - the point to uninitialize
+ */
 void point3d_uninitialize(point3d_t *point);
+
+/*
+ * point3d_scale - scales point by the given scalar
+ * @param point - the point to scale
+ * @param scalar - the scalar by which to multiply
+ */
 void point3d_scale(point3d_t *point, double scalar);
 
+/*
+ * point3d_add - adds the source point to the destination point
+ * @param dst - the destination point
+ * @param src - the source point
+ */
+void point3d_add(point3d_t *dst, point3d_t *src);
 
+/*
+ * point3d_print_to_iv - prints the point as a white sphere in the OpenInventor file format
+ * @param point - the point to print
+ * @param file - the file to which to print
+ * @param r - the radius for the printed spheres
+ */
+void point3d_print_to_iv(point3d_t *point, FILE *file, double r);
 #endif

@@ -8,6 +8,7 @@ typedef enum
 	FILE_OPEN_ERROR,
 	FILE_READ_ERROR,
 	FILE_FORMAT_ERROR,
+	OUT_OF_MEM,
 } status_t;
 
 #endif
