@@ -29,4 +29,4 @@ $(BIN)awh44_math.o: $(SRC)awh44_math.c
 
 .PHONY: clean
 clean:
-	rm -f bin/* CG_hw1
+	rm -f bin/* CG_hw1 outputs/*
