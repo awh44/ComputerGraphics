@@ -4,12 +4,12 @@ SRC=src/
 COMMON_OPTS=-Iinc/ -o $@ $(DEBUG)
 BIN_OPTS=$(COMMON_OPTS) -c $^
 PROG_OPTS=$(COMMON_OPTS) $^ -lm
-ALL_DEPENDS=$(BIN)main.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
+HW1_DEPENDS=$(BIN)hw1_main.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 
-CG_hw1: $(ALL_DEPENDS)
+CG_hw1: $(HW1_DEPENDS)
 	$(CC) $(PROG_OPTS)
 
-$(BIN)main.o: $(SRC)main.c
+$(BIN)hw1_main.o: $(SRC)hw1_main.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)bezier.o: $(SRC)bezier.c
