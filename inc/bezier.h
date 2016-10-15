@@ -12,8 +12,7 @@ typedef struct
 
 /*
  * bezier_initialize - creates and initializes a Bezier curve
- * @param ctrl - the control points for the Bezier curve
- * @return     - a new Bezier curve structure with the given control points
+ * @return - a new Bezier curve structure with the given control points
  */
 bezier_t *bezier_initialize(void);
 
