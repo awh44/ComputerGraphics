@@ -1,22 +1,14 @@
-#include <math.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
-#include "awh44_math.h"
-#include "bezier.h"
-#include "point3d.h"
-#include "point3d_vec.h"
-#include "polyline.h"
-#include "status.h"
-
+#include "catmullrom.h"
 #include "graphics.h"
+#include "polyline.h"
 
 status_t parse_args(int argc, char **argv, char **filename, double *u_inc, double *radius);
 void usage(char *prog);
-void print_to_iv(bezier_t *bezier, double radius, polyline_t *poly);
+status_t read_tangents(FILE *stream, point3d_t *t0, point3d_t *t1);
+void print_to_iv(catmullrom_t *catmullrom, double radius, polyline_t *poly);
 
 int main(int argc, char **argv)
 {
@@ -38,15 +30,27 @@ int main(int argc, char **argv)
 		goto exit0;
 	}
 
-	bezier_t *bezier;
-	if ((bezier = bezier_initialize()) == NULL)
+	catmullrom_t *catmullrom;
+	if ((catmullrom = catmullrom_initialize()) == NULL)
 	{
 		error = OUT_OF_MEM;
 		goto exit1;
 	}
 
-	if ((error = read_points(file, bezier->ctrl)))
+	if ((error = read_tangents(file, catmullrom->t0, catmullrom->tN)))
 	{
+		goto exit2;
+	}
+
+	if ((error = read_points(file, catmullrom->ctrl)))
+	{
+		goto exit2;
+	}
+
+	if (point3d_vec_size(catmullrom->ctrl) < 2)
+	{
+		fprintf(stderr, "ERROR: Catmull-Rom spline requires at least two points\n");
+		error = FILE_FORMAT_ERROR;
 		goto exit2;
 	}
 
@@ -57,18 +61,18 @@ int main(int argc, char **argv)
 		goto exit2;
 	}
 
-	if ((error = bezier_calculate_polyline(bezier, poly, u_inc)))
+	if ((error = catmullrom_calculate_polyline(catmullrom, poly, u_inc)))
 	{
 		fprintf(stderr, "ERROR: Could not calculate the points to draw.\n");
 		goto exit3;
 	}
 
-	print_to_iv(bezier, radius, poly);
+	print_to_iv(catmullrom, radius, poly);
 
 exit3:
 	polyline_uninitialize(poly);
 exit2:
-	bezier_uninitialize(bezier);
+	catmullrom_uninitialize(catmullrom);
 exit1:
 	fclose(file);
 exit0:
@@ -126,9 +130,44 @@ void usage(char *prog)
 		"usage: %s [-f filename] [-u 0.0 < increment < 1.0 ] [-r sphere radius]\n", prog);
 }
 
-void print_to_iv(bezier_t *bezier, double radius, polyline_t *poly)
+status_t read_tangents(FILE *stream, point3d_t *t0, point3d_t *t1)
+{
+	status_t error = SUCCESS;
+
+	char *line = NULL;
+	size_t size = 0;
+	ssize_t chars_read;
+	
+	if ((chars_read = getline(&line, &size, stream)) <= 0)
+	{
+		error = FILE_READ_ERROR;
+		goto exit0;
+	}
+	
+	if ((error = parse_point(line, t0)))
+	{
+		goto exit0;
+	}
+
+	if ((chars_read = getline(&line, &size, stream)) <= 0)
+	{
+		error = FILE_READ_ERROR;
+		goto exit0;
+	}
+
+	if ((error = parse_point(line, t1)))
+	{
+		goto exit0;
+	}
+
+exit0:
+	free(line);
+	return error;
+}
+
+void print_to_iv(catmullrom_t *catmullrom, double radius, polyline_t *poly)
 {
 	printf("#Inventor V2.0 ascii\n");
-	bezier_print_to_iv(bezier, radius, stdout);
+	catmullrom_print_to_iv(catmullrom, radius, stdout);
 	polyline_print_to_iv(poly, stdout);
 }

@@ -53,6 +53,13 @@ void point3d_scale(point3d_t *point, double scalar);
 void point3d_add(point3d_t *dst, point3d_t *src);
 
 /*
+ * point3d_sub - subtracts the source point from the destination point
+ * @param dst - the destination point
+ * @param src - the source point
+ */
+void point3d_sub(point3d_t *dst, point3d_t *src);
+
+/*
  * point3d_print_to_iv - prints the point as a white sphere in the OpenInventor file format
  * @param point - the point to print
  * @param file - the file to which to print

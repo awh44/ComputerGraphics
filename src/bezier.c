@@ -47,7 +47,6 @@ status_t bezier_calculate_polyline(bezier_t *bezier, polyline_t *poly, double in
 	status_t error = SUCCESS;
 	double u;
 
-	bezier_print_to_iv(bezier, .05, stdout);
 	//The first point is just the first control point
 	if ((error = polyline_copy_and_append_point(poly, point3d_vec_get(bezier->ctrl, 0))))
 	{
@@ -101,6 +100,53 @@ static status_t calculate_polyline_at_u(bezier_t *bezier, double u, point3d_t **
 		(*draw)->y += ctrl_point->y * scalar;
 		(*draw)->z += ctrl_point->z * scalar;
 	}
+
+exit0:
+	return error;
+}
+
+status_t bezier_from_hermite(bezier_t *bezier, point3d_t *p0, point3d_t *p3, point3d_t *t0, point3d_t *t1)
+{
+	status_t error = SUCCESS;
+	point3d_t *p0_copy = point3d_copy(p0);
+	point3d_t *p3_copy = point3d_copy(p3);
+	if (p0_copy == NULL || p3_copy == NULL)
+	{
+		goto error0;
+	}
+
+	// p1 = p0 + 1/3 * t0
+	point3d_t *p1 = point3d_copy(t0);
+	if (p1 == NULL)
+	{
+		goto error1;
+	}
+	point3d_scale(p1, 1.0 / 3.0);
+	point3d_add(p1, p0);
+
+	// p2 = p3 - 1/3 * t1
+	point3d_t *p2 = point3d_copy(t1);
+	if (p2 == NULL)
+	{
+		goto error2;
+	}
+	point3d_scale(p2, -1.0 / 3.0);
+	point3d_add(p2, p3);
+
+	point3d_vec_push_back(bezier->ctrl, p0_copy);
+	point3d_vec_push_back(bezier->ctrl, p1);
+	point3d_vec_push_back(bezier->ctrl, p2);
+	point3d_vec_push_back(bezier->ctrl, p3_copy);
+	goto exit0;
+
+error2:
+	free(p2);
+error1:
+	free(p1);
+error0:
+	free(p3_copy);
+	free(p0_copy);
+	error = OUT_OF_MEM;
 
 exit0:
 	return error;

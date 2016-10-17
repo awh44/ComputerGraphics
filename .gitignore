@@ -1,4 +1,5 @@
-CG_hw1
+CG_hw*
 bin/
 *.swp
 outputs/
+correct/
