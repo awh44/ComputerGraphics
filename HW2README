@@ -1,29 +1,33 @@
 CS 536
-Assignment 1 - Arbitrary Degree Bezier Curves
+Assignment 2 - Catmull-Rom Splines
 
-The program provided here takes in a list of control points provided by a file and outputs, to standard
-out in OpenInventor format, the control points and a polyline for the Bezier curved defined by those
-control points.
+The program provided here takes in two tangent vectors and a list of control points provided by a file
+and outputs, to standard out in OpenInventor format, the control points and a polyline for the 
+Catmull-Rom spline defined by those control points.
 
 The program was written in C on Ubuntu Linux and compiled using gcc. The exact commands to do the
 compilation can be seen in the Makefile. To simply compile using the Makefile, type "make", which will
-create the CG_hw1 executable. The individual modules can be compiled individually as well, with
+create the CG_hw2 executable. The individual modules can be compiled individually as well, with
 different targets in the Makefile producing different object files in the bin/ directory. To clean up
 the directory, type "make clean". This will remove the executable, the files in bin/, and any files in
 output/ as well.
 
-Note that the main function is located within src/main.c.
+Note that the main function is located within src/hw2_main.c.
 
 The options are as follows. Note that none of them are required.
 	-f filename
-	The name of the input file with the control points; default value "cpts_in.txt". The input file must
-	have the format
+	The name of the input file with the tangents and control points; default value "cpts_in.txt". The
+	input file must have the format
+		t1x t1y t1z
+		tNx tNy tNz
 		x1 y1 z1
 		x2 y2 z2
 		...
 		xN yN zN
 	where each line has three floating point numbers seperated by spaces, with the last number being
-	immediately followed by a newline (including the last line in the file).
+	immediately followed by a newline (including the last line in the file). The first two lines define,
+	respectively, the tangent at the first point and the tangent at the last point, and the remaining
+	lines define the control points.
 
 	-u increment
 	The increment to be used in evaluating the points on the polyline; default value 0.09. Must be
