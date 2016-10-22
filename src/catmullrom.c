@@ -119,6 +119,11 @@ loop_error0:
 		break;
 	}
 
+	if (error)
+	{
+		goto exit0;
+	}
+
 	bezier_t *bezier;
 	if ((bezier = bezier_initialize()) == NULL)
 	{
