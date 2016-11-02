@@ -63,7 +63,7 @@ status_t bezier_calculate_polyline(bezier_t *bezier, polyline_t *poly, double in
 		polyline_append_point(poly, new_point);
 	}
 
-	//Make sure to handle u == 1.0 - just thel last control point
+	//Make sure to handle u == 1.0 - just the last control point
 	size_t last = point3d_vec_size(bezier->ctrl) - 1;
 	if ((error = polyline_copy_and_append_point(poly, point3d_vec_get(bezier->ctrl, last))))
 	{
@@ -90,15 +90,9 @@ static status_t calculate_polyline_at_u(bezier_t *bezier, double u, point3d_t **
 	size_t i;
 	for (i = 0; i <= k; i++)
 	{
-		uint64_t combo = combination(k, i);
-		double one_minus_u_pow = pow(1 - u, k - i);
-		double u_pow = pow(u, i);
-		double scalar = combo * one_minus_u_pow * u_pow;
-
+		double scalar = bernstein_polynomial(k, i, u);
 		point3d_t *ctrl_point = point3d_vec_get(bezier->ctrl, i);
-		(*draw)->x += ctrl_point->x * scalar;
-		(*draw)->y += ctrl_point->y * scalar;
-		(*draw)->z += ctrl_point->z * scalar;
+		point3d_fmad(*draw, ctrl_point, scalar);
 	}
 
 exit0:

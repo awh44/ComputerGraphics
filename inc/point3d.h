@@ -60,6 +60,15 @@ void point3d_add(point3d_t *dst, point3d_t *src);
 void point3d_sub(point3d_t *dst, point3d_t *src);
 
 /*
+ * point3d_fmad - computes the fused multiply add by multiplying the point by a scalar and then
+ * adding it
+ * @param dst - the destination point
+ * @param src - the source point
+ * @param s   - the scalar by which to multiply the source point
+ */
+void point3d_fmad(point3d_t *dst, point3d_t *src, double s);
+
+/*
  * point3d_print_to_iv - prints the point as a white sphere in the OpenInventor file format
  * @param point - the point to print
  * @param file - the file to which to print

@@ -69,6 +69,13 @@ void point3d_sub(point3d_t *dst, point3d_t *src)
 	dst->z -= src->z;
 }
 
+void point3d_fmad(point3d_t *dst, point3d_t *src, double s)
+{
+	dst->x += src->x * s;
+	dst->y += src->y * s;
+	dst->z += src->z * s;
+}
+
 void point3d_print_to_iv(point3d_t *point, FILE *file, double r)
 {
 	fprintf(file,

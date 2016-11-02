@@ -11,4 +11,10 @@
  */
 uint64_t combination(uint32_t n, uint32_t k);
 
+/*
+ * bernstein_polynomial - calculates the value of a Bernstein polynomial at u, i.e.,
+ * (n choose i) * u^i * (1 - u)^(n - i)
+ */
+double bernstein_polynomial(uint32_t n, uint32_t i, double u);
+
 #endif
