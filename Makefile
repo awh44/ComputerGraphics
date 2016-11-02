@@ -2,17 +2,24 @@ CC=gcc
 BIN=bin/
 SRC=src/
 INC=inc/
-COMMON_OPTS=-I$(INC) -o $@ $(DEBUG)
+COMMON_OPTS=-I$(INC) -Wall -o $@ $(DEBUG)
 BIN_OPTS=$(COMMON_OPTS) -c $^
 PROG_OPTS=$(COMMON_OPTS) $^ -lm
 HW1_DEPENDS=$(BIN)hw1_main.o $(BIN)graphics.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW2_DEPENDS=$(BIN)hw2_main.o $(BIN)graphics.o $(BIN)catmullrom.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
+HW3_DEPENDS=$(BIN)hw3_main.o $(BIN)graphics.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
+
+CG_hw3: $(HW3_DEPENDS)
+	$(CC) $(PROG_OPTS)
 
 CG_hw2: $(HW2_DEPENDS)
 	$(CC) $(PROG_OPTS)
 
 CG_hw1: $(HW1_DEPENDS)
 	$(CC) $(PROG_OPTS)
+
+$(BIN)hw3_main.o: $(SRC)hw3_main.c
+	$(CC) $(BIN_OPTS)
 
 $(BIN)hw2_main.o: $(SRC)hw2_main.c
 	$(CC) $(BIN_OPTS)
