@@ -50,4 +50,4 @@ $(BIN)awh44_math.o: $(SRC)awh44_math.c
 
 .PHONY: clean
 clean:
-	rm -f bin/* CG_hw* outputs/*
+	rm -f bin/* CG_hw*
