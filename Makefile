@@ -7,7 +7,7 @@ BIN_OPTS=$(COMMON_OPTS) -c $^
 PROG_OPTS=$(COMMON_OPTS) $^ -lm
 HW1_DEPENDS=$(BIN)hw1_main.o $(BIN)graphics.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW2_DEPENDS=$(BIN)hw2_main.o $(BIN)graphics.o $(BIN)catmullrom.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
-HW3_DEPENDS=$(BIN)hw3_main.o $(BIN)graphics.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
+HW3_DEPENDS=$(BIN)hw3_main.o $(BIN)graphics.o $(BIN)bezier_surface.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 
 CG_hw3: $(HW3_DEPENDS)
 	$(CC) $(PROG_OPTS)
@@ -28,6 +28,9 @@ $(BIN)hw1_main.o: $(SRC)hw1_main.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)graphics.o: $(SRC)graphics.c
+	$(CC) $(BIN_OPTS)
+
+$(BIN)bezier_surface.o: $(SRC)bezier_surface.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)catmullrom.o: $(SRC)catmullrom.c
