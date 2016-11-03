@@ -40,11 +40,13 @@ void bezier_surface_uninitialize(bezier_surface_t *surface)
 	point3d_vec_uninitialize(surface->ctrls);
 	free(surface);
 }
-status_t bezier_surface_calculate_mesh(bezier_surface_t *surface, point3d_vec_t *points, double du, double dv)
+
+status_t bezier_surface_calculate_mesh_points(bezier_surface_t *surface, mesh_t *mesh, double du, double dv)
 {
 	status_t error = SUCCESS;
 
 	point3d_vec_t *ctrls = surface->ctrls;
+	point3d_vec_t *points = mesh->points;
 
 	double u;
 	for (u = 0.0; u <= 1.0; u += du)

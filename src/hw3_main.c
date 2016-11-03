@@ -6,6 +6,7 @@
 #include "awh44_math.h"
 #include "bezier_surface.h"
 #include "graphics.h"
+#include "mesh.h"
 #include "point3d.h"
 #include "point3d_vec.h"
 #include "status.h"
@@ -21,7 +22,7 @@ typedef struct
 
 status_t parse_args(int argc, char **argv, args_t *args);
 void usage(char *prog);
-void print_to_iv(bezier_surface_t *surface, point3d_vec_t *points);
+void print_to_iv(bezier_surface_t *surface, mesh_t *mesh);
 
 int main(int argc, char **argv)
 {
@@ -45,6 +46,7 @@ int main(int argc, char **argv)
 	bezier_surface_t *bezier;
 	if ((bezier = bezier_surface_initialize()) == NULL)
 	{
+		fprintf(stderr, "ERROR: out of memory\n");
 		error = OUT_OF_MEM;
 		goto exit1;
 	}
@@ -64,27 +66,24 @@ int main(int argc, char **argv)
 	double du = 1 / (((double) args.num_u) - 1);
 	double dv = 1 / (((double) args.num_v) - 1);
 
-	point3d_vec_t *points;
-	if ((points = point3d_vec_initialize()) == NULL)
+	mesh_t *mesh;
+	if ((mesh = mesh_initialize()) == NULL)
 	{
+		fprintf(stderr, "ERROR: out of memory\n");
 		error = OUT_OF_MEM;
 		goto exit2;
 	}
 
-	if ((error = bezier_surface_calculate_mesh(bezier, points, du, dv)))
+	if ((error = bezier_surface_calculate_mesh_points(bezier, mesh, du, dv)))
 	{
+		fprintf(stderr, "ERROR: could not calculate mesh for Bezier surface\n");
 		goto exit3;
 	}
 
-	print_to_iv(bezier, points);
+	print_to_iv(bezier, mesh);
 
-	size_t i;
 exit3:
-	for (i = 0; i < point3d_vec_size(points); i++)
-	{
-		point3d_uninitialize(point3d_vec_get(points, i));
-	}
-	point3d_vec_uninitialize(points);
+	mesh_uninitialize(mesh);
 exit2:
 	bezier_surface_uninitialize(bezier);
 exit1:
@@ -184,14 +183,9 @@ void usage(char *prog)
 		"[-r control sphere radius]\n", prog);
 }
 
-void print_to_iv(bezier_surface_t *bezier, point3d_vec_t *points)
+void print_to_iv(bezier_surface_t *bezier, mesh_t *mesh)
 {
 	printf("#Inventor V2.0 ascii\n");
 	bezier_surface_print_to_iv(bezier, 0.1, stdout);
-
-	size_t i;
-	for (i = 0; i < point3d_vec_size(points); i++)
-	{
-		point3d_print_to_iv(point3d_vec_get(points, i), stdout, 0.1);
-	}
+	mesh_print_to_iv(mesh, stdout);
 }
