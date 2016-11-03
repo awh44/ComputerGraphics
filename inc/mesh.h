@@ -3,6 +3,7 @@
 
 #include "mesh_face_vec.h"
 #include "point3d_vec.h"
+#include "status.h"
 
 typedef struct mesh_face_t
 {
@@ -18,5 +19,6 @@ typedef struct
 
 mesh_t *mesh_initialize(void);
 void mesh_uninitialize(mesh_t *mesh);
+status_t mesh_calculate_faces(mesh_t *mesh);
 void mesh_print_to_iv(mesh_t *mesh, FILE *stream);
 #endif

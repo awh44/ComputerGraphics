@@ -80,6 +80,11 @@ int main(int argc, char **argv)
 		goto exit3;
 	}
 
+	if ((error = mesh_calculate_faces(mesh)))
+	{
+		goto exit3;
+	}
+
 	print_to_iv(bezier, mesh);
 
 exit3:

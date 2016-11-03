@@ -2,6 +2,7 @@
 
 #include "mesh_face_vec.h"
 #include "point3d_vec.h"
+#include "status.h"
 
 mesh_t *mesh_initialize(void)
 {
@@ -36,9 +37,33 @@ success:
 
 void mesh_uninitialize(mesh_t *mesh)
 {
-	point3d_vec_uninitialize(mesh->points);
-	mesh_face_vec_uninitialize(mesh->faces);
+	size_t i;
+
+	point3d_vec_t *points = mesh->points;
+	size_t num_points = point3d_vec_size(points);
+	for (i = 0; i < num_points; i++)
+	{
+		point3d_uninitialize(point3d_vec_get(points, i));
+	}
+	point3d_vec_uninitialize(points);
+
+	mesh_face_vec_t *faces = mesh->faces;
+	size_t num_faces = mesh_face_vec_size(faces);
+	for (i = 0; i < num_faces; i++)
+	{
+		free(mesh_face_vec_get(faces, i));
+	}
+	mesh_face_vec_uninitialize(faces);
+
 	free(mesh);
+}
+
+status_t mesh_calculate_faces(mesh_t *mesh)
+{
+	status_t error = SUCCESS;
+	goto exit0;
+exit0:
+	return error;
 }
 
 void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
