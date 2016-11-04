@@ -161,7 +161,6 @@ status_t parse_args(int argc, char **argv, args_t *args)
 
 			case 'F':
 			{
-				printf("Foudn F\n");
 				if (seen_S)
 				{
 					return ARGS_ERROR;
