@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdint.h>
 
 #include "bezier_surface.h"
@@ -93,45 +94,29 @@ exit0:
 	return error;
 }
 
-static status_t bezier_surface_partial(mesh_t *mesh, double partial, double constant, uint8_t is_row_first, point3d_t *result)
+static status_t calculate_partial_u(bezier_surface_t *bezier, double u, double v, point3d_t *result)
 {
 	status_t error = SUCCESS;
-	double bernsteins_for_constant[4] =
+	double bernsteins[4] =
 	{
-		bernstein_polynomial(3, 0, constant),
-		bernstein_polynomial(3, 1, constant),
-		bernstein_polynomial(3, 2, constant),
-		bernstein_polynomial(3, 3, constant),
+		bernstein_polynomial(3, 0, v),
+		bernstein_polynomial(3, 1, v),
+		bernstein_polynomial(3, 2, v),
+		bernstein_polynomial(3, 3, v),
 	};
-
-	double one_m_partial = 1 - partial;
-	double one_m_partial_squared = one_m_partial * one_m_partial;
-	double two_x_partial_x1_m_partial = 2 * partial * one_m_partial;
-	double partial_squared = partial * partial;
 
 	double scalars_for_partial[4] =
 	{
-		-3 * one_m_partial_squared,
-		3 * (one_m_partial_squared - two_x_partial_x1_m_partial),
-		3 * (two_x_partial_x1_m_partial - partial_squared),
-		3 * partial_squared,
+		-3.0 * pow((1.0 - u), 2.0),
+		3.0 * pow((1.0 - u), 2.0) - 6.0 * u * (1.0 - u),
+		6.0 * u * (1.0 - u) - 3.0 * u * u,
+		3.0 * u * u,
 	};
 
 
-	size_t i, j;
-	size_t *partial_i, *constant_j;
-	if (is_row_first)
-	{
-		partial_i = &i;
-		constant_j = &j;
-	}
-	else
-	{
-		partial_i = &j;
-		constant_j = &i;
-	}
-
-	for (*partial_i = 0; *partial_i < 4; (*partial_i)++)
+	size_t i;
+	point3d_vec_t *ctrls = bezier->ctrls;
+	for (i = 0; i < 4; i++)
 	{
 		point3d_t *temp = point3d_initialize();
 		if (temp == NULL)
@@ -140,13 +125,14 @@ static status_t bezier_surface_partial(mesh_t *mesh, double partial, double cons
 			goto exit0;
 		}
 
-		for (*constant_j = 0; *constant_j < 4; (*constant_j)++)
+		size_t j;
+		for (j = 0; j < 4; j++)
 		{
-			point3d_t *point = point3d_vec_get(mesh->points, i * 4 + j);
-			point3d_fmad(temp, point, bernsteins_for_constant[*constant_j]);
+			point3d_t *point = point3d_vec_get(ctrls, i * 4 + j);
+			point3d_fmad(temp, point, bernsteins[j]);
 		}
 
-		point3d_scale(temp, scalars_for_partial[*partial_i]);
+		point3d_scale(temp, scalars_for_partial[i]);
 		point3d_add(result, temp);
 		point3d_uninitialize(temp);
 	}
@@ -154,6 +140,54 @@ static status_t bezier_surface_partial(mesh_t *mesh, double partial, double cons
 exit0:
 	return error;
 }
+
+static status_t calculate_partial_v(bezier_surface_t *bezier, double u, double v, point3d_t *result)
+{
+	status_t error = SUCCESS;
+	double bernsteins[4] =
+	{
+		bernstein_polynomial(3, 0, u),
+		bernstein_polynomial(3, 1, u),
+		bernstein_polynomial(3, 2, u),
+		bernstein_polynomial(3, 3, u),
+	};
+
+	double scalars_for_partial[4] =
+	{
+		-3.0 * pow((1.0 - v), 2.0),
+		3.0 * pow((1.0 - v), 2.0) - 6.0 * v * (1.0 - v),
+		6.0 * v * (1.0 - v) - 3.0 * v * v,
+		3.0 * v * v,
+	};
+
+
+	size_t j;
+	point3d_vec_t *ctrls = bezier->ctrls;
+	for (j = 0; j < 4; j++)
+	{
+		point3d_t *temp = point3d_initialize();
+		if (temp == NULL)
+		{
+			error = OUT_OF_MEM;
+			goto exit0;
+		}
+
+		size_t i;
+		for (i = 0; i < 4; i++)
+		{
+			point3d_t *point = point3d_vec_get(ctrls, i * 4 + j);
+			point3d_fmad(temp, point, bernsteins[i]);
+		}
+
+		point3d_scale(temp, scalars_for_partial[j]);
+		point3d_add(result, temp);
+		point3d_uninitialize(temp);
+	}
+
+exit0:
+	return error;
+}
+
 
 status_t bezier_surface_calculate_mesh_normals(bezier_surface_t *bezier, mesh_t *mesh)
 {
@@ -182,8 +216,8 @@ status_t bezier_surface_calculate_mesh_normals(bezier_surface_t *bezier, mesh_t 
 				goto loop_exit1;
 			}
 
-			if ((error = bezier_surface_partial(mesh, u, v, 1, partial_u)) ||
-			    (error = bezier_surface_partial(mesh, v, u, 0, partial_v)))
+			if ((error = calculate_partial_u(bezier, u, v, partial_u)) ||
+			    (error = calculate_partial_v(bezier, u, v, partial_v)))
 			{
 				goto loop_exit2;
 			}
