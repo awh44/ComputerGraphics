@@ -122,6 +122,10 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 {
 	fprintf(stream,
 "Separator {\n\
+	ShapeHints {\n\
+		vertexOrdering	COUNTERCLOCKWISE\n\
+	}\n\
+\n\
 	Coordinate3 {\n\
 		point [\n");
 
@@ -136,14 +140,16 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 "			%lf %lf %lf,\n", point->x, point->y, point->z);
 	}
 
+	fprintf(stream,
+"		]\n\
+	}\n\
+\n");
+
 	size_t num_normals = point3d_vec_size(mesh->normals);
 	if (num_normals > 0)
 	{
 		fprintf(stream,
-"		]\n\
-	}\n\
-\
-	NormalBinding {\n\
+"	NormalBinding {\n\
 		value	PER_VERTEX_INDEXED\n\
 	}\n\
 \n\
@@ -173,7 +179,7 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 	{
 		mesh_face_t *face = mesh_face_vec_get(faces, i);
 		fprintf(stream,
-	"			%zu %zu %zu -1,\n", face->vertices[0], face->vertices[1], face->vertices[2]);
+	"			%zu, %zu, %zu, -1,\n", face->vertices[0], face->vertices[1], face->vertices[2]);
 	}
 	fprintf(stream,
 "		]\n\
