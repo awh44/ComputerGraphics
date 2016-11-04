@@ -12,7 +12,10 @@ different targets in the Makefile producing different object files in the bin/ d
 the directory, type "make clean". This will remove the executable and the files in bin/.
 output/ as well.
 
-Note that the main function is located within src/hw3_main.c.
+Note that the main function is located within src/hw3_main.c. Also note that the normal calculations
+are done within src/bezier_surface.c, in the function bezier_surface_calculate_mesh_normals, at line
+177. The partial derivative calculations are done in calculate_partial, at line 97, and the normal
+is calculated from the results of calculate_partial at line 216.
 
 The options are as follows. Note that none of them are required.
 	-f filename
