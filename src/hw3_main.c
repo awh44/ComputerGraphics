@@ -22,12 +22,12 @@ typedef struct
 
 status_t parse_args(int argc, char **argv, args_t *args);
 void usage(char *prog);
-void print_to_iv(bezier_surface_t *surface, mesh_t *mesh);
+void print_to_iv(bezier_surface_t *surface, double radisu, mesh_t *mesh);
 
 int main(int argc, char **argv)
 {
 	status_t error = SUCCESS;
-	
+
 	args_t args;
 	if ((error = parse_args(argc, argv, &args)))
 	{
@@ -63,9 +63,6 @@ int main(int argc, char **argv)
 		goto exit2;
 	}
 
-	double du = 1 / (((double) args.num_u) - 1);
-	double dv = 1 / (((double) args.num_v) - 1);
-
 	mesh_t *mesh;
 	if ((mesh = mesh_initialize()) == NULL)
 	{
@@ -74,7 +71,7 @@ int main(int argc, char **argv)
 		goto exit2;
 	}
 
-	if ((error = bezier_surface_calculate_mesh_points(bezier, mesh, du, dv)))
+	if ((error = bezier_surface_calculate_mesh_points(bezier, mesh, args.num_u, args.num_v)))
 	{
 		fprintf(stderr, "ERROR: could not calculate mesh for Bezier surface\n");
 		goto exit3;
@@ -82,10 +79,20 @@ int main(int argc, char **argv)
 
 	if ((error = mesh_calculate_faces(mesh)))
 	{
+		fprintf(stderr, "ERROR: could not calculate faces for mesh\n");
 		goto exit3;
 	}
 
-	print_to_iv(bezier, mesh);
+	if (!args.use_flat)
+	{
+		if ((error = bezier_surface_calculate_mesh_normals(bezier, mesh)))
+		{
+			fprintf(stderr, "ERROR: could not calculate normals for mesh\n");
+			goto exit3;
+		}
+	}
+
+	print_to_iv(bezier, args.radius, mesh);
 
 exit3:
 	mesh_uninitialize(mesh);
@@ -109,7 +116,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 	uint8_t seen_F = 0;
 
 	char opt;
-	while ((opt = getopt(argc, argv, "f:u:v:r:F:S:")) > 0)
+	while ((opt = getopt(argc, argv, "FSf:u:v:r:")) > 0)
 	{
 		switch (opt)
 		{
@@ -154,11 +161,14 @@ status_t parse_args(int argc, char **argv, args_t *args)
 
 			case 'F':
 			{
+				printf("Foudn F\n");
 				if (seen_S)
 				{
 					return ARGS_ERROR;
 				}
 				args->use_flat = 1;
+				seen_F = 1;
+				break;
 			}
 
 			case 'S':
@@ -168,6 +178,8 @@ status_t parse_args(int argc, char **argv, args_t *args)
 					return ARGS_ERROR;
 				}
 				args->use_flat = 0;
+				seen_S = 1;
+				break;
 			}
 
 			case '?':
@@ -188,9 +200,9 @@ void usage(char *prog)
 		"[-r control sphere radius]\n", prog);
 }
 
-void print_to_iv(bezier_surface_t *bezier, mesh_t *mesh)
+void print_to_iv(bezier_surface_t *bezier, double radius, mesh_t *mesh)
 {
 	printf("#Inventor V2.0 ascii\n");
-	bezier_surface_print_to_iv(bezier, 0.1, stdout);
+	bezier_surface_print_to_iv(bezier, radius, stdout);
 	mesh_print_to_iv(mesh, stdout);
 }

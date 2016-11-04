@@ -14,7 +14,10 @@ struct mesh_face_vec_t;
 typedef struct
 {
 	point3d_vec_t *points;
+	size_t num_u;
+	size_t num_v;
 	struct mesh_face_vec_t *faces;
+	point3d_vec_t *normals;
 } mesh_t;
 
 mesh_t *mesh_initialize(void);
