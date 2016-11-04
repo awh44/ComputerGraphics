@@ -94,8 +94,27 @@ exit0:
 	return error;
 }
 
-static status_t calculate_partial_u(bezier_surface_t *bezier, double u, double v, point3d_t *result)
+static status_t calculate_partial(bezier_surface_t *bezier, double u, double v, uint8_t is_u_partial, point3d_t *result)
 {
+	/*
+		a = -3 * (1 - u)^2
+		b = 3 * (1 - u)^2 -6 * u * (1 - u)
+		c = 6 * u * (1 - u) - 3 * u^2
+		d = 3 * u^2
+
+		d/du =
+			a * (B(3, 0, v) * p[0] + B(3, 1, v) * p[1] + B(3, 2, v) * p[2] + B(3, 3, v) * p[4])
+			b * (B(3, 0, v) * p[4] + B(3, 1, v) * p[5] + B(3, 2, v) * p[6] + B(3, 3, v) * p[7])
+			c * (B(3, 0, v) * p[8] + B(3, 1, v) * p[9] + B(3, 2, v) * p[10] + B(3, 3, v) * p[11])
+			d * (B(3, 0, v) * p[12] + B(3, 1, v) * p[13] + B(3, 2, v) * p[14] + B(3, 3, v) * p[15])
+
+		d/dv =
+			a * (B(3, 0, u) * p[0] + B(3, 1, u) * p[4] + B(3, 2, u) * p[8] + B(3, 3, u) * p[12])
+			b * (B(3, 0, u) * p[1] + B(3, 1, u) * p[5] + B(3, 2, u) * p[9] + B(3, 3, u) * p[13])
+			c * (B(3, 0, u) * p[2] + B(3, 1, u) * p[6] + B(3, 2, u) * p[10] + B(3, 3, u) * p[14])
+			d * (B(3, 0, u) * p[3] + B(3, 1, u) * p[7] + B(3, 2, u) * p[11] + B(3, 3, u) * p[15])
+	*/
+
 	status_t error = SUCCESS;
 	double bernsteins[4] =
 	{
@@ -113,10 +132,25 @@ static status_t calculate_partial_u(bezier_surface_t *bezier, double u, double v
 		3.0 * u * u,
 	};
 
+	size_t i, j;
+	//Use these pointers to track which index (i or j) to increment. As seen in the comment above,
+	//the partial derivatives are identical, besides the order of the indices to be used for the points.
+	//The pointers allow for the order in which the indices are traversed ("row" first or "column" first)
+	//to be swapped.
+	size_t *outer_index, *inner_index;
+	if (is_u_partial)
+	{
+		outer_index = &i;
+		inner_index = &j;
+	}
+	else
+	{
+		outer_index = &j;
+		inner_index = &i;
+	}
 
-	size_t i;
 	point3d_vec_t *ctrls = bezier->ctrls;
-	for (i = 0; i < 4; i++)
+	for (*outer_index = 0; *outer_index < 4; (*outer_index)++)
 	{
 		point3d_t *temp = point3d_initialize();
 		if (temp == NULL)
@@ -125,14 +159,13 @@ static status_t calculate_partial_u(bezier_surface_t *bezier, double u, double v
 			goto exit0;
 		}
 
-		size_t j;
-		for (j = 0; j < 4; j++)
+		for (*inner_index = 0; *inner_index < 4; (*inner_index)++)
 		{
 			point3d_t *point = point3d_vec_get(ctrls, i * 4 + j);
-			point3d_fmad(temp, point, bernsteins[j]);
+			point3d_fmad(temp, point, bernsteins[*inner_index]);
 		}
 
-		point3d_scale(temp, scalars_for_partial[i]);
+		point3d_scale(temp, scalars_for_partial[*outer_index]);
 		point3d_add(result, temp);
 		point3d_uninitialize(temp);
 	}
@@ -140,54 +173,6 @@ static status_t calculate_partial_u(bezier_surface_t *bezier, double u, double v
 exit0:
 	return error;
 }
-
-static status_t calculate_partial_v(bezier_surface_t *bezier, double u, double v, point3d_t *result)
-{
-	status_t error = SUCCESS;
-	double bernsteins[4] =
-	{
-		bernstein_polynomial(3, 0, u),
-		bernstein_polynomial(3, 1, u),
-		bernstein_polynomial(3, 2, u),
-		bernstein_polynomial(3, 3, u),
-	};
-
-	double scalars_for_partial[4] =
-	{
-		-3.0 * pow((1.0 - v), 2.0),
-		3.0 * pow((1.0 - v), 2.0) - 6.0 * v * (1.0 - v),
-		6.0 * v * (1.0 - v) - 3.0 * v * v,
-		3.0 * v * v,
-	};
-
-
-	size_t j;
-	point3d_vec_t *ctrls = bezier->ctrls;
-	for (j = 0; j < 4; j++)
-	{
-		point3d_t *temp = point3d_initialize();
-		if (temp == NULL)
-		{
-			error = OUT_OF_MEM;
-			goto exit0;
-		}
-
-		size_t i;
-		for (i = 0; i < 4; i++)
-		{
-			point3d_t *point = point3d_vec_get(ctrls, i * 4 + j);
-			point3d_fmad(temp, point, bernsteins[i]);
-		}
-
-		point3d_scale(temp, scalars_for_partial[j]);
-		point3d_add(result, temp);
-		point3d_uninitialize(temp);
-	}
-
-exit0:
-	return error;
-}
-
 
 status_t bezier_surface_calculate_mesh_normals(bezier_surface_t *bezier, mesh_t *mesh)
 {
@@ -216,8 +201,8 @@ status_t bezier_surface_calculate_mesh_normals(bezier_surface_t *bezier, mesh_t 
 				goto loop_exit1;
 			}
 
-			if ((error = calculate_partial_u(bezier, u, v, partial_u)) ||
-			    (error = calculate_partial_v(bezier, u, v, partial_v)))
+			if ((error = calculate_partial(bezier, u, v, 1, partial_u)) ||
+			    (error = calculate_partial(bezier, v, u, 0, partial_v)))
 			{
 				goto loop_exit2;
 			}
