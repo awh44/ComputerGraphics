@@ -109,7 +109,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 	args->filename = "patchPoints.txt";
 	args->num_u = 11;
 	args->num_v = 11;
-	args->radius = 1.0;
+	args->radius = 0.1;
 	args->use_flat = 1;
 
 	uint8_t seen_S = 0;
