@@ -92,7 +92,7 @@ $(OUT)sellipsoid1_flat.iv: CG_hw4
 $(OUT)sellipsoid1_smooth.iv: CG_hw4
 	./CG_hw4 $(SELLIPSOID1) -S > $@
 
-SELLIPSOID2=-A 1.2 -B 1.1 -C 2.3 -r 0.9 -t 1.0 -u 25 -v 13
+SELLIPSOID2=-A 1.2 -B 1.1 -C 2.3 -r 0.09 -t 1.0 -u 25 -v 13
 $(OUT)sellipsoid2_flat.iv: CG_hw4
 	./CG_hw4 $(SELLIPSOID2) -F > $@
 $(OUT)sellipsoid2_smooth.iv: CG_hw4
