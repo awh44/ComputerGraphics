@@ -38,8 +38,11 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 
 	point3d_vec_t *points = mesh->points;
 
+	point3d_t *first_pole = point3d_initialize_with_coords(0, 0, C * s(-M_PI / 2, s1));
+	point3d_vec_push_back(points, first_pole);
+
 	double v;
-	for (v = -M_PI / 2; v <= M_PI / 2; v += dv)
+	for (v = -M_PI / 2 + dv; v <= M_PI / 2 - dv; v += dv)
 	{
 		double u;
 		for (u = -M_PI; u <= M_PI; u += du)
@@ -58,6 +61,9 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 			point3d_vec_push_back(points, new_point);
 		}
 	}
+
+	point3d_t *last_pole = point3d_initialize_with_coords(0, 0, C * s(M_PI / 2, s1));
+	point3d_vec_push_back(points, last_pole);
 
 	mesh->num_u = num_u;
 	mesh->num_v = num_v;
