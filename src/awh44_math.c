@@ -3,6 +3,21 @@
 
 #include "awh44_math.h"
 
+double sgn(double n)
+{
+	if (n < 0)
+	{
+		return -1;
+	}
+
+	if (n > 0)
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 uint64_t combination(uint32_t n, uint32_t k)
 {
 	if (k == 0 || k >= n)

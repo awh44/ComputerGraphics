@@ -4,6 +4,13 @@
 #include <stdint.h>
 
 /*
+ * sgn - returns indiciation for sign of given number (-1, 0, or 1)
+ * @param n - the number of which to find the sign
+ * @return - -1 for negative number, 0 for 0, and 1 for positive number
+ */
+double sgn(double n);
+
+/*
  * combination - computes the combination (k choose i)
  * @param n - the size of the set in which the choosing is to be done
  * @param k - the number of items to choose

@@ -8,6 +8,10 @@ PROG_OPTS=$(COMMON_OPTS) $^ -lm
 HW1_DEPENDS=$(BIN)hw1_main.o $(BIN)graphics.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW2_DEPENDS=$(BIN)hw2_main.o $(BIN)graphics.o $(BIN)catmullrom.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW3_DEPENDS=$(BIN)hw3_main.o $(BIN)graphics.o $(BIN)bezier_surface.o $(BIN)mesh.o $(BIN)mesh_face_vec.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
+HW4_DEPENDS=$(BIN)hw4_main.o $(BIN)sellipsoid.o $(BIN)mesh.o $(BIN)mesh_face_vec.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
+
+CG_hw4: $(HW4_DEPENDS)
+	$(CC) $(PROG_OPTS)
 
 CG_hw3: $(HW3_DEPENDS)
 	$(CC) $(PROG_OPTS)
@@ -17,6 +21,9 @@ CG_hw2: $(HW2_DEPENDS)
 
 CG_hw1: $(HW1_DEPENDS)
 	$(CC) $(PROG_OPTS)
+
+$(BIN)hw4_main.o: $(SRC)hw4_main.c
+	$(CC) $(BIN_OPTS)
 
 $(BIN)hw3_main.o: $(SRC)hw3_main.c
 	$(CC) $(BIN_OPTS)
@@ -28,6 +35,9 @@ $(BIN)hw1_main.o: $(SRC)hw1_main.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)graphics.o: $(SRC)graphics.c
+	$(CC) $(BIN_OPTS)
+
+$(BIN)sellipsoid.o: $(SRC)sellipsoid.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)bezier_surface.o: $(SRC)bezier_surface.c
