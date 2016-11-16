@@ -112,7 +112,7 @@ exit0:
 status_t mesh_calculate_faces(mesh_t *mesh)
 {
 	status_t error = SUCCESS;
-
+	mesh_face_vec_t *faces = mesh->faces;
 	size_t num_u = mesh->num_u;
 	size_t num_v = mesh->num_v;
 
@@ -122,33 +122,10 @@ status_t mesh_calculate_faces(mesh_t *mesh)
 		size_t j;
 		for (j = 0; j < num_v - 1; j++)
 		{
-			//Pretty sure this is buggy if num_u != num_v...
-			size_t curr_i_curr_j = i * num_u + j;
-			size_t curr_i_next_j = i * num_u + (j + 1);
-			size_t next_i_curr_j = (i + 1) * num_u + j;
-			size_t next_i_next_j = (i + 1) * num_u + (j + 1);
-
-			mesh_face_t *new_face1;
-			mesh_face_t *new_face2;
-			if (((new_face1 = malloc(sizeof *new_face1)) == NULL) ||
-				((new_face2 = malloc(sizeof *new_face2)) == NULL))
+			if ((error = add_faces(faces, i, j, num_v)))
 			{
-				//Must be either NULL (safe to free) or allocated
-				free(new_face1);
-				error = OUT_OF_MEM;
 				goto exit0;
 			}
-
-			new_face1->vertices[0] = curr_i_curr_j;
-			new_face1->vertices[1] = curr_i_next_j;
-			new_face1->vertices[2] = next_i_curr_j;
-
-			new_face2->vertices[0] = curr_i_next_j;
-			new_face2->vertices[1] = next_i_next_j;
-			new_face2->vertices[2] = next_i_curr_j;
-
-			mesh_face_vec_push_back(mesh->faces, new_face1);
-			mesh_face_vec_push_back(mesh->faces, new_face2);
 		}
 	}
 

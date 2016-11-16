@@ -68,6 +68,18 @@ $(BIN)point3d_vec.o: $(SRC)point3d_vec.c
 $(BIN)awh44_math.o: $(SRC)awh44_math.c
 	$(CC) $(BIN_OPTS)
 
+PATCH0=-f inputs/patch0.txt -r 0.1 -u 9 -v 11
+$(OUT)patch0_flat.iv: CG_hw3
+	./CG_hw3 $(PATCH0) -F > $@
+$(OUT)patch0_smooth.iv: CG_hw3
+	./CG_hw3 $(PATCH0) -S > $@
+
+PATCH1=-f inputs/patch1.txt -r 0.1 -u 13 -v 13
+$(OUT)patch1_flat.iv: CG_hw3
+	./CG_hw3 $(PATCH1) -F > $@
+$(OUT)patch1_smooth.iv: CG_hw3
+	./CG_hw3 $(PATCH1) -S > $@
+
 SELLIPSOID0=-A 1 -B 1 -C 1 -r 1 -t 1 -u 21 -v 11
 $(OUT)sellipsoid0_flat.iv: CG_hw4
 	./CG_hw4 $(SELLIPSOID0) -F > $@
