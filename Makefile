@@ -2,6 +2,7 @@ CC=gcc
 BIN=bin/
 SRC=src/
 INC=inc/
+OUT=outputs/
 COMMON_OPTS=-I$(INC) -Wall -o $@ $(DEBUG)
 BIN_OPTS=$(COMMON_OPTS) -c $^
 PROG_OPTS=$(COMMON_OPTS) $^ -lm
@@ -66,6 +67,36 @@ $(BIN)point3d_vec.o: $(SRC)point3d_vec.c
 
 $(BIN)awh44_math.o: $(SRC)awh44_math.c
 	$(CC) $(BIN_OPTS)
+
+SELLIPSOID0=-A 1 -B 1 -C 1 -r 1 -t 1 -u 21 -v 11
+$(OUT)sellipsoid0_flat.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID0) -F > $@
+$(OUT)sellipsoid0_smooth.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID0) -S > $@
+
+SELLIPSOID1=-A 1 -B 1 -C 1 -r 0.1 -t 0.23 -u 19 -v 9
+$(OUT)sellipsoid1_flat.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID1) -F > $@
+$(OUT)sellipsoid1_smooth.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID1) -S > $@
+
+SELLIPSOID2=-A 1.2 -B 1.1 -C 2.3 -r 0.9 -t 1.0 -u 25 -v 13
+$(OUT)sellipsoid2_flat.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID2) -F > $@
+$(OUT)sellipsoid2_smooth.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID2) -S > $@
+
+SELLIPSOID3=-A 1.9 -B 2.1 -C 0.5 -r 1.9 -t 1.6 -u 23 -v 12
+$(OUT)sellipsoid3_flat.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID3) -F > $@
+$(OUT)sellipsoid3_smooth.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID3) -S > $@
+
+SELLIPSOID4=-A 2.5 -B 1.3 -C 3.3 -r 0.5 -t 1.35 -u 29 -v 15
+$(OUT)sellipsoid4_flat.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID4) -F > $@
+$(OUT)sellipsoid4_smooth.iv: CG_hw4
+	./CG_hw4 $(SELLIPSOID4) -S > $@
 
 .PHONY: clean
 clean:
