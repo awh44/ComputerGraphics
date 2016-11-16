@@ -87,6 +87,7 @@ status_t mesh_calculate_faces(mesh_t *mesh)
 		size_t j;
 		for (j = 0; j < num_v - 1; j++)
 		{
+			//Pretty sure this is buggy if num_u != num_v...
 			size_t curr_i_curr_j = i * num_u + j;
 			size_t curr_i_next_j = i * num_u + (j + 1);
 			size_t next_i_curr_j = (i + 1) * num_u + j;
@@ -113,6 +114,92 @@ status_t mesh_calculate_faces(mesh_t *mesh)
 
 			mesh_face_vec_push_back(mesh->faces, new_face1);
 			mesh_face_vec_push_back(mesh->faces, new_face2);
+		}
+	}
+
+exit0:
+	return error;
+}
+
+status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
+{
+	status_t error = SUCCESS;
+	mesh_face_vec_t *faces = mesh->faces;
+	size_t num_v = mesh->num_v;
+	size_t num_u = mesh->num_u;
+/*
+	size_t index;
+	for (index = 1; index < num_u - 1; index++)
+	{
+		mesh_face_t *new_face;
+		if ((new_face = malloc(sizeof *new_face)) == NULL)
+		{
+			error = OUT_OF_MEM;
+			goto exit0;
+		}
+
+		new_face->vertices[0] = 0;
+		new_face->vertices[1] = index;
+		new_face->vertices[2] = index + 1;
+		mesh_face_vec_push_back(faces, new_face);
+	}
+
+	mesh_face_t *new_face;
+	if ((new_face = malloc(sizeof *new_face)) == NULL)
+	{
+		error = OUT_OF_MEM;
+		goto exit0;
+	}
+
+	new_face->vertices[0] = 0;
+	new_face->vertices[1] = num_u - 1 + 1;
+	new_face->vertices[2] = 1;
+	mesh_face_vec_push_back(faces, new_face);
+*/
+
+
+	/*
+		Indices here are a little "funky" because of the lone pole at the end.
+		Not going to treat the pole as a "row", so start j at 0 for the first
+		"row" of points and, when calculating the indices, just add 1 to account
+		for the pole. For the stop condition: normally, we'd stop at the second-to-last
+		row, row num_v - 2, but because the pole has to be treated differently, we
+		would stop at row num_v - 3. However, because the indices are "off" a row
+		because of the *first* pole, we need to stop at num_v - 4.
+	*/
+	size_t j;
+	for (j = 0; j < num_v - 3; j++)
+	{
+		size_t i;
+		for (i = 0; i < num_u; i++)
+		{
+			//+ 1 at the end for the pole
+			size_t curr_j_curr_i = j * num_u + i + 1;
+			size_t curr_j_next_i = curr_j_curr_i + 1;
+			size_t next_j_curr_i = curr_j_curr_i + num_u;
+			size_t next_j_next_i = curr_j_next_i + num_u;
+
+			mesh_face_t *new_face1;
+			mesh_face_t *new_face2;
+			if (((new_face1 = malloc(sizeof *new_face1)) == NULL) ||
+				((new_face2 = malloc(sizeof *new_face2)) == NULL))
+			{
+				//Must be either NULL (safe to free) or allocated
+				free(new_face1);
+				error = OUT_OF_MEM;
+				goto exit0;
+			}
+
+			new_face1->vertices[0] = curr_j_curr_i;
+			new_face1->vertices[1] = curr_j_next_i;
+			new_face1->vertices[2] = next_j_curr_i;
+
+			new_face2->vertices[0] = curr_j_next_i;
+			new_face2->vertices[1] = next_j_next_i;
+			new_face2->vertices[2] = next_j_curr_i;
+
+			mesh_face_vec_push_back(faces, new_face1);
+			mesh_face_vec_push_back(faces, new_face2);
 		}
 	}
 

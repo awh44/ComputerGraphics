@@ -41,13 +41,11 @@ int main(int argc, char **argv)
 		goto exit1;
 	}
 
-	/*
-	if ((error = mesh_calculate_faces(mesh)))
+	if ((error = mesh_calculate_sellipsoid_faces(mesh)))
 	{
 		fprintf(stderr, "ERROR: could not calculate faces for mesh\n");
-		goto exit3;
+		goto exit1;
 	}
-	*/
 
 	/*
 	if (!args.use_flat)
@@ -186,7 +184,7 @@ void usage(char *prog)
 void print_to_iv(mesh_t *mesh)
 {
 	printf("#Inventor V2.0 ascii\n");
-	//mesh_print_to_iv(mesh, stdout);
+	mesh_print_to_iv(mesh, stdout);
 
 	point3d_vec_t *points = mesh->points;
 	size_t num = point3d_vec_size(points);

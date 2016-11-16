@@ -41,11 +41,14 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 	point3d_t *first_pole = point3d_initialize_with_coords(0, 0, C * s(-M_PI / 2, s1));
 	point3d_vec_push_back(points, first_pole);
 
+	//Use integral indices to avoid missing points due to floating point imprecision
+	size_t j;
 	double v;
-	for (v = -M_PI / 2 + dv; v <= M_PI / 2 - dv; v += dv)
+	for (j = 1, v = -M_PI / 2 + dv; j < num_v - 1; j++, v += dv)
 	{
+		size_t i;
 		double u;
-		for (u = -M_PI; u <= M_PI; u += du)
+		for (i = 0, u = -M_PI; i < num_u; i++, u += du)
 		{
 			point3d_t *new_point;
 			if ((new_point = point3d_initialize()) == NULL)
