@@ -14,5 +14,6 @@ typedef struct
 } sellipsoid_t;
 
 status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh, size_t num_u, size_t num_v);
+status_t sellipsoid_calculate_mesh_normals(sellipsoid_t *sellipsoid, mesh_t *mesh);
 
 #endif

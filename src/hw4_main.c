@@ -47,16 +47,14 @@ int main(int argc, char **argv)
 		goto exit1;
 	}
 
-	/*
 	if (!args.use_flat)
 	{
-		if ((error = bezier_surface_calculate_mesh_normals(bezier, mesh)))
+		if ((error = sellipsoid_calculate_mesh_normals(&args.sellipsoid, mesh)))
 		{
 			fprintf(stderr, "ERROR: could not calculate normals for mesh\n");
-			goto exit3;
+			goto exit1;
 		}
 	}
-	*/
 
 	print_to_iv(mesh);
 
@@ -180,17 +178,8 @@ void usage(char *prog)
 		"	[-S smooth-shaded or -F flat-shaded]\n", prog);
 }
 
-
 void print_to_iv(mesh_t *mesh)
 {
 	printf("#Inventor V2.0 ascii\n");
 	mesh_print_to_iv(mesh, stdout);
-
-	point3d_vec_t *points = mesh->points;
-	size_t num = point3d_vec_size(points);
-	size_t i;
-	for (i = 0; i < num; i++)
-	{
-		point3d_print_to_iv(point3d_vec_get(points, i), stdout, 0.1);
-	}
 }
