@@ -4,6 +4,16 @@
 #include "point3d_vec.h"
 #include "status.h"
 
+#define MALLOC_OR_GOTO(obj, errvar, label)\
+	do\
+	{\
+		if ((obj = malloc(sizeof *obj)) == NULL)\
+		{\
+			errvar = OUT_OF_MEM;\
+			goto label;\
+		}\
+	} while (0)
+
 mesh_t *mesh_initialize(void)
 {
 	mesh_t *mesh;
@@ -133,42 +143,73 @@ exit0:
 	return error;
 }
 
+static status_t add_first_fan(mesh_face_vec_t *faces, size_t num_per_row)
+{
+	status_t error = SUCCESS;
+	mesh_face_t *new_face;
+
+	size_t index_in_row;
+	for (index_in_row = 0; index_in_row < num_per_row - 1; index_in_row++)
+	{
+		MALLOC_OR_GOTO(new_face, error, exit0);
+
+		//+ 1 and + 2 because of the pole's own index
+		new_face->vertices[0] = 0;
+		new_face->vertices[1] = index_in_row + 1;
+		new_face->vertices[2] = index_in_row + 2;
+		mesh_face_vec_push_back(faces, new_face);
+	}
+
+	//Because of the "wraparound," the last point in the row has to be treated differently
+	MALLOC_OR_GOTO(new_face, error, exit0);
+	new_face->vertices[0] = 0;
+	new_face->vertices[1] = num_per_row;
+	new_face->vertices[2] = 1;
+	mesh_face_vec_push_back(faces, new_face);
+
+exit0:
+	return error;
+}
+
+static status_t add_last_fan(mesh_face_vec_t *faces, size_t num_per_row, size_t num_points)
+{
+	status_t error = SUCCESS;
+	mesh_face_t *new_face;
+	size_t last_index = num_points - 1;
+
+	size_t index_in_row;
+	for (index_in_row = 0; index_in_row < num_per_row - 1; index_in_row++)
+	{
+		MALLOC_OR_GOTO(new_face, error, exit0);
+
+		new_face->vertices[0] = last_index;
+		new_face->vertices[1] = last_index - (index_in_row + 1);
+		new_face->vertices[2] = last_index - (index_in_row + 2);
+		mesh_face_vec_push_back(faces, new_face);
+	}
+
+	//Because of the "wraparound," the last point in the row has to be treated differently
+	MALLOC_OR_GOTO(new_face, error, exit0);
+	new_face->vertices[0] = last_index;
+	new_face->vertices[1] = last_index - num_per_row;
+	new_face->vertices[2] = last_index - 1;
+	mesh_face_vec_push_back(faces, new_face);
+
+exit0:
+	return error;
+}
+
 status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 {
 	status_t error = SUCCESS;
 	mesh_face_vec_t *faces = mesh->faces;
 	size_t num_v = mesh->num_v;
 	size_t num_u = mesh->num_u;
-/*
-	size_t index;
-	for (index = 1; index < num_u - 1; index++)
-	{
-		mesh_face_t *new_face;
-		if ((new_face = malloc(sizeof *new_face)) == NULL)
-		{
-			error = OUT_OF_MEM;
-			goto exit0;
-		}
 
-		new_face->vertices[0] = 0;
-		new_face->vertices[1] = index;
-		new_face->vertices[2] = index + 1;
-		mesh_face_vec_push_back(faces, new_face);
-	}
-
-	mesh_face_t *new_face;
-	if ((new_face = malloc(sizeof *new_face)) == NULL)
+	if ((error = add_first_fan(faces, num_u)))
 	{
-		error = OUT_OF_MEM;
 		goto exit0;
 	}
-
-	new_face->vertices[0] = 0;
-	new_face->vertices[1] = num_u - 1 + 1;
-	new_face->vertices[2] = 1;
-	mesh_face_vec_push_back(faces, new_face);
-*/
-
 
 	/*
 		Indices here are a little "funky" because of the lone pole at the end.
@@ -191,6 +232,11 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 				goto exit0;
 			}
 		}
+	}
+
+	if ((error = add_last_fan(faces, num_u, point3d_vec_size(mesh->points))))
+	{
+		goto exit0;
 	}
 
 exit0:
