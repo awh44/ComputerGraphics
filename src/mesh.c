@@ -97,6 +97,8 @@ status_t mesh_calculate_faces(mesh_t *mesh)
 			if (((new_face1 = malloc(sizeof *new_face1)) == NULL) ||
 				((new_face2 = malloc(sizeof *new_face2)) == NULL))
 			{
+				//Must be either NULL (safe to free) or allocated
+				free(new_face1);
 				error = OUT_OF_MEM;
 				goto exit0;
 			}
