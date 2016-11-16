@@ -74,6 +74,41 @@ void mesh_uninitialize(mesh_t *mesh)
 	free(mesh);
 }
 
+static status_t add_faces(mesh_face_vec_t *faces, size_t row, size_t col, size_t num_per_row)
+{
+	status_t error = SUCCESS;
+
+	size_t curr_row_curr_col = row * num_per_row + col;
+	size_t curr_row_next_col = curr_row_curr_col + 1;
+	size_t next_row_curr_col = curr_row_curr_col + num_per_row;
+	size_t next_row_next_col = curr_row_next_col + num_per_row;
+
+	mesh_face_t *new_face1;
+	mesh_face_t *new_face2;
+	if (((new_face1 = malloc(sizeof *new_face1)) == NULL) ||
+		((new_face2 = malloc(sizeof *new_face2)) == NULL))
+	{
+		//Must be either NULL (safe to free) or allocated
+		free(new_face1);
+		error = OUT_OF_MEM;
+		goto exit0;
+	}
+
+	new_face1->vertices[0] = curr_row_curr_col;
+	new_face1->vertices[1] = curr_row_next_col;
+	new_face1->vertices[2] = next_row_curr_col;
+
+	new_face2->vertices[0] = curr_row_next_col;
+	new_face2->vertices[1] = next_row_next_col;
+	new_face2->vertices[2] = next_row_curr_col;
+
+	mesh_face_vec_push_back(faces, new_face1);
+	mesh_face_vec_push_back(faces, new_face2);
+
+exit0:
+	return error;
+}
+
 status_t mesh_calculate_faces(mesh_t *mesh)
 {
 	status_t error = SUCCESS;
@@ -173,33 +208,11 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 		size_t i;
 		for (i = 0; i < num_u; i++)
 		{
-			//+ 1 at the end for the pole
-			size_t curr_j_curr_i = j * num_u + i + 1;
-			size_t curr_j_next_i = curr_j_curr_i + 1;
-			size_t next_j_curr_i = curr_j_curr_i + num_u;
-			size_t next_j_next_i = curr_j_next_i + num_u;
-
-			mesh_face_t *new_face1;
-			mesh_face_t *new_face2;
-			if (((new_face1 = malloc(sizeof *new_face1)) == NULL) ||
-				((new_face2 = malloc(sizeof *new_face2)) == NULL))
+			//+ 1 to account for the pole
+			if ((error = add_faces(faces, j, i + 1, num_u)))
 			{
-				//Must be either NULL (safe to free) or allocated
-				free(new_face1);
-				error = OUT_OF_MEM;
 				goto exit0;
 			}
-
-			new_face1->vertices[0] = curr_j_curr_i;
-			new_face1->vertices[1] = curr_j_next_i;
-			new_face1->vertices[2] = next_j_curr_i;
-
-			new_face2->vertices[0] = curr_j_next_i;
-			new_face2->vertices[1] = next_j_next_i;
-			new_face2->vertices[2] = next_j_curr_i;
-
-			mesh_face_vec_push_back(faces, new_face1);
-			mesh_face_vec_push_back(faces, new_face2);
 		}
 	}
 
