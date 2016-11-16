@@ -80,17 +80,17 @@ void point3d_print_to_iv(point3d_t *point, FILE *file, double r)
 {
 	fprintf(file,
 "Separator {\n\
-LightModel {\n\
-model PHONG\n\
-}\n\
-Material {\n\
-	diffuseColor 1.0 1.0 1.0\n\
-}\n\
-Transform {\n\
-	translation %lf %lf %lf\n\
-}\n\
-Sphere {\n\
-	radius %lf\n\
-}\n\
+	LightModel {\n\
+		model PHONG\n\
+	}\n\
+	Material {\n\
+		diffuseColor 1.0 1.0 1.0\n\
+	}\n\
+	Transform {\n\
+		translation %lf %lf %lf\n\
+	}\n\
+	Sphere {\n\
+		radius %lf\n\
+	}\n\
 }\n", point->x, point->y, point->z, r);
 }
