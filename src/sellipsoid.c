@@ -62,6 +62,11 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 	double v;
 	for (j = 1, v = -M_PI / 2 + dv; j < num_v - 1; j++, v += dv)
 	{
+		double c_v_s1 = c(v, s1);
+		double x_scale = A * c_v_s1;
+		double y_scale = B * c_v_s1;
+		double z = C * s(v, s1);
+
 		size_t i;
 		double u;
 		for (i = 0, u = -M_PI; i < num_u; i++, u += du)
@@ -73,9 +78,9 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 				goto exit0;
 			}
 
-			new_point->x = A * c(v, s1) * c(u, s2);
-			new_point->y = B * c(v, s1) * s(u, s2);
-			new_point->z = C * s(v, s1);
+			new_point->x = x_scale * c(u, s2);
+			new_point->y = y_scale * s(u, s2);
+			new_point->z = z;
 
 			point3d_vec_push_back(points, new_point);
 		}
@@ -124,6 +129,11 @@ status_t sellipsoid_calculate_mesh_normals(sellipsoid_t *sellipsoid, mesh_t *mes
 	double v;
 	for (j = 1, v = -M_PI / 2 + dv; j < num_v - 1; j++, v += dv)
 	{
+		double c_v_2_min_s1 = c(v, two_min_s1);
+		double x_scale = one_over_A * c_v_2_min_s1;
+		double y_scale = one_over_B * c_v_2_min_s1;
+		double z = one_over_C * s(v, two_min_s1);
+
 		size_t i;
 		double u;
 		for (i = 0, u = -M_PI; i < num_u; i++, u += du)
@@ -135,10 +145,9 @@ status_t sellipsoid_calculate_mesh_normals(sellipsoid_t *sellipsoid, mesh_t *mes
 				goto exit0;
 			}
 
-			normal->x = (1.0 / sellipsoid->A) * c(v, 2 - sellipsoid->s1) * c(u, 2 - sellipsoid->s2);
-			normal->y = (1.0 / sellipsoid->B) * c(v, 2 - sellipsoid->s1) * s(u, 2 - sellipsoid->s2);
-			normal->z = (1.0 / sellipsoid->C) * s(v, 2 - sellipsoid->s2);
-
+			normal->x = x_scale * c(u, two_min_s2);
+			normal->y = y_scale * s(u, two_min_s2);
+			normal->z = z;
 			point3d_vec_push_back(normals, normal);
 		}
 	}
