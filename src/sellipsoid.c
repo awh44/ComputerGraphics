@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -49,6 +50,11 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 	point3d_vec_t *points = mesh->points;
 
 	point3d_t *first_pole = point3d_initialize_with_coords(0, 0, C * s(-M_PI / 2, s1));
+	if (first_pole == NULL)
+	{
+		error = OUT_OF_MEM;
+		goto exit0;
+	}
 	point3d_vec_push_back(points, first_pole);
 
 	//Use integral indices to avoid missing points due to floating point imprecision
@@ -76,6 +82,11 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 	}
 
 	point3d_t *last_pole = point3d_initialize_with_coords(0, 0, C * s(M_PI / 2, s1));
+	if (last_pole == NULL)
+	{
+		error = OUT_OF_MEM;
+		goto exit0;
+	}
 	point3d_vec_push_back(points, last_pole);
 
 	mesh->num_u = num_u;
@@ -100,33 +111,45 @@ status_t sellipsoid_calculate_mesh_normals(sellipsoid_t *sellipsoid, mesh_t *mes
 
 	point3d_vec_t *normals = mesh->normals;
 
-	point3d_t *first_norm = point3d_initialize_with_coords(0, 0, one_over_C * s(-M_PI / 2, two_min_s1));
+	point3d_t *first_norm =
+		point3d_initialize_with_coords(0, 0, one_over_C * s(-M_PI / 2, two_min_s1));
+	if (first_norm == NULL)
+	{
+		error = OUT_OF_MEM;
+		goto exit0;
+	}
 	point3d_vec_push_back(normals, first_norm);
 
 	size_t j;
 	double v;
-	for (j = 0, v = -M_PI / 2 + dv; j < num_v - 1; j++, v += dv)
+	for (j = 1, v = -M_PI / 2 + dv; j < num_v - 1; j++, v += dv)
 	{
 		size_t i;
 		double u;
 		for (i = 0, u = -M_PI; i < num_u; i++, u += du)
 		{
-			double x = one_over_A * c(v, two_min_s1) * c(u, two_min_s2);
-			double y = one_over_B * c(v, two_min_s1) * s(u, two_min_s2);
-			double z = one_over_C * s(v, two_min_s1);
-
 			point3d_t *normal;
-			if ((normal = point3d_initialize_with_coords(x, y, z)) == NULL)
+			if ((normal = point3d_initialize()) == NULL)
 			{
 				error = OUT_OF_MEM;
 				goto exit0;
 			}
 
+			normal->x = (1.0 / sellipsoid->A) * c(v, 2 - sellipsoid->s1) * c(u, 2 - sellipsoid->s2);
+			normal->y = (1.0 / sellipsoid->B) * c(v, 2 - sellipsoid->s1) * s(u, 2 - sellipsoid->s2);
+			normal->z = (1.0 / sellipsoid->C) * s(v, 2 - sellipsoid->s2);
+
 			point3d_vec_push_back(normals, normal);
 		}
 	}
 
-	point3d_t *last_norm = point3d_initialize_with_coords(0, 0, one_over_C * s(M_PI / 2, two_min_s1));
+	point3d_t *last_norm =
+		point3d_initialize_with_coords(0, 0, one_over_C * s(M_PI / 2, two_min_s1));
+	if (last_norm == NULL)
+	{
+		error = OUT_OF_MEM;
+		goto exit0;
+	}
 	point3d_vec_push_back(normals, last_norm);
 
 exit0:
