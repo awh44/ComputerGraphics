@@ -140,13 +140,13 @@ static status_t calculate_partial(bezier_surface_t *bezier, double u, double v, 
 	size_t *outer_index, *inner_index;
 	if (is_u_partial)
 	{
-		outer_index = &i;
-		inner_index = &j;
+		outer_index = &j;
+		inner_index = &i;
 	}
 	else
 	{
-		outer_index = &j;
-		inner_index = &i;
+		outer_index = &i;
+		inner_index = &j;
 	}
 
 	point3d_vec_t *ctrls = bezier->ctrls;
@@ -161,7 +161,7 @@ static status_t calculate_partial(bezier_surface_t *bezier, double u, double v, 
 
 		for (*inner_index = 0; *inner_index < 4; (*inner_index)++)
 		{
-			point3d_t *point = point3d_vec_get(ctrls, i * 4 + j);
+			point3d_t *point = point3d_vec_get(ctrls, i + j * 4);
 			point3d_fmad(temp, point, bernsteins[*inner_index]);
 		}
 
