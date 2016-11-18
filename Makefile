@@ -68,7 +68,7 @@ $(BIN)point3d_vec.o: $(SRC)point3d_vec.c
 $(BIN)awh44_math.o: $(SRC)awh44_math.c
 	$(CC) $(BIN_OPTS)
 
-PATCH0=-f inputs/patch0.txt -r 0.1 -u 9 -v 11
+PATCH0=-f inputs/patch0.txt -r 0.1 -u 9 -v 9
 $(OUT)patch0_flat.iv: CG_hw3
 	./CG_hw3 $(PATCH0) -F > $@
 $(OUT)patch0_smooth.iv: CG_hw3
