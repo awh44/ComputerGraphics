@@ -310,8 +310,8 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 		vertexOrdering	COUNTERCLOCKWISE\n\
 	}\n\
 \n\
-  Coordinate3 {\n\
-    point [\n");
+	Coordinate3 {\n\
+		point [\n");
 
 	size_t i;
 
@@ -321,41 +321,41 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 	{
 		point3d_t *point = point3d_vec_get(points, i);
 		fprintf(stream,
-"	%lf %lf %lf,\n", point->x, point->y, point->z);
+"			%lf %lf %lf,\n", point->x, point->y, point->z);
 	}
 
 	fprintf(stream,
-"    ]\n\
-  }\n\
+"		]\n\
+	}\n\
 \n");
 
 	size_t num_normals = point3d_vec_size(mesh->normals);
 	if (num_normals > 0)
 	{
 		fprintf(stream,
-"NormalBinding {\n\
-  value        PER_VERTEX_INDEXED\n\
+"	NormalBinding {\n\
+		value        PER_VERTEX_INDEXED\n\
 	}\n\
 \n\
-  Normal {\n\
-    vector [\n");
+	Normal {\n\
+		vector [\n");
 
 		for (i = 0; i < num_normals; i++)
 		{
 			point3d_t *normal = point3d_vec_get(mesh->normals, i);
 			fprintf(stream,
-"	%lf %lf %lf,\n", normal->x, normal->y, normal->z);
+"			%lf %lf %lf,\n", normal->x, normal->y, normal->z);
 		}
 
 		fprintf(stream,
-"    ]\n\
- }\n");
+"		]\n\
+	}\n");
 
 	}
 
 	fprintf(stream,
-"  IndexedFaceSet {\n\
-    coordIndex [\n");
+"	IndexedFaceSet {\n\
+		coordIndex [\n");
 
 	mesh_face_vec_t *faces = mesh->faces;
 	size_t num_faces = mesh_face_vec_size(faces);
@@ -363,11 +363,11 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 	{
 		mesh_face_t *face = mesh_face_vec_get(faces, i);
 		fprintf(stream,
-	"	 %zu, %zu, %zu, -1,\n", face->vertices[0], face->vertices[1], face->vertices[2]);
+"			%zu, %zu, %zu, -1,\n", face->vertices[0], face->vertices[1], face->vertices[2]);
 	}
 	fprintf(stream,
-"    ]\n\
-  }\n\
+"		]\n\
+	}\n\
 }\n");
 }
 
