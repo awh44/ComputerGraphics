@@ -253,10 +253,7 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 	size_t num_u = mesh->num_u;
 
 	//Add a triangle fan from the first pole point to all the points in the first row.
-	if ((error = add_first_fan(faces, num_u - 1)))
-	{
-		goto exit0;
-	}
+	IF_ERROR_GOTO(add_first_fan(faces, num_u - 1), error, exit0);
 
 	/*
 		Indices here are a little "funky" because of the lone poles at the ends.
@@ -282,10 +279,7 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 		{
 			//i + 1 to account for the pole; num_u - 1 because each row actually only
 			//has num_u - 1 points, because point num_u - 1 would be the same as point 0
-			if ((error = add_faces(faces, j, i + 1, num_u - 1)))
-			{
-				goto exit0;
-			}
+			IF_ERROR_GOTO(add_faces(faces, j, i + 1, num_u - 1), error, exit0);
 		}
 
 		//Process the "wraparound" point
@@ -293,14 +287,16 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 		size_t curr_j_frst_i = j * (num_u - 1) + 1;
 		size_t next_j_curr_i = curr_j_curr_i + (num_u - 1);
 		size_t next_j_frst_i = curr_j_frst_i + (num_u - 1);
-		add_faces_new(faces, curr_j_curr_i, curr_j_frst_i, next_j_curr_i, next_j_frst_i);
+		IF_ERROR_GOTO
+		(
+			add_faces_new(faces, curr_j_curr_i, curr_j_frst_i, next_j_curr_i, next_j_frst_i),
+			error,
+			exit0
+		);
 	}
 
 	//Add a triangle fan from all the points in the last row to the last pole point.
-	if ((error = add_last_fan(faces, num_u - 1, point3d_vec_size(mesh->points))))
-	{
-		goto exit0;
-	}
+	IF_ERROR_GOTO(add_last_fan(faces, num_u - 1, point3d_vec_size(mesh->points)), error, exit0);
 
 exit0:
 	return error;

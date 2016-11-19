@@ -31,15 +31,6 @@
 
 #define S_EXTRACT(var) double var = sellipsoid->var
 
-#define IF_ERROR_GOTO(expr, errvar, label)\
-	do\
-	{\
-		if ((errvar = (expr)))\
-		{\
-			goto label;\
-		}\
-	} while (0)
-
 #ifndef V_INIT
 	#define V_INIT (M_PI / 2)
 #endif

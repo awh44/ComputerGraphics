@@ -11,4 +11,13 @@ typedef enum
 	OUT_OF_MEM,
 } status_t;
 
+#define IF_ERROR_GOTO(expr, errvar, label)\
+	do\
+	{\
+		if ((errvar = (expr)))\
+		{\
+			goto label;\
+		}\
+	} while (0)
+
 #endif
