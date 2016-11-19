@@ -84,6 +84,7 @@ void mesh_uninitialize(mesh_t *mesh)
 	free(mesh);
 }
 
+/*
 static status_t add_faces_to_vec
 (
 	mesh_face_vec_t *faces,
@@ -119,7 +120,44 @@ static status_t add_faces_to_vec
 
 exit0:
 	return error;
+}
+*/
 
+static status_t add_faces_new
+(
+	mesh_face_vec_t *faces,
+	size_t curr_row_curr_col,
+	size_t curr_row_next_col,
+	size_t next_row_curr_col,
+	size_t next_row_next_col
+)
+{
+	status_t error = SUCCESS;
+
+	mesh_face_t *new_face1;
+	mesh_face_t *new_face2;
+	if (((new_face1 = malloc(sizeof *new_face1)) == NULL) ||
+		((new_face2 = malloc(sizeof *new_face2)) == NULL))
+	{
+		//Must be either NULL (safe to free) or allocated
+		free(new_face1);
+		error = OUT_OF_MEM;
+		goto exit0;
+	}
+
+	new_face1->vertices[0] = next_row_curr_col;
+	new_face1->vertices[1] = next_row_next_col;
+	new_face1->vertices[2] = curr_row_next_col;
+
+	new_face2->vertices[0] = next_row_curr_col;
+	new_face2->vertices[1] = curr_row_next_col;
+	new_face2->vertices[2] = curr_row_curr_col;
+
+	mesh_face_vec_push_back(faces, new_face1);
+	mesh_face_vec_push_back(faces, new_face2);
+
+exit0:
+	return error;
 }
 
 static status_t add_faces(mesh_face_vec_t *faces, size_t row, size_t col, size_t num_per_row)
@@ -128,8 +166,7 @@ static status_t add_faces(mesh_face_vec_t *faces, size_t row, size_t col, size_t
 	size_t curr_row_next_col = curr_row_curr_col + 1;
 	size_t next_row_curr_col = curr_row_curr_col + num_per_row;
 	size_t next_row_next_col = curr_row_next_col + num_per_row;
-
-	return add_faces_to_vec(faces, curr_row_curr_col, curr_row_next_col, next_row_curr_col, next_row_next_col);
+	return add_faces_new(faces, curr_row_curr_col, curr_row_next_col, next_row_curr_col, next_row_next_col);
 }
 
 status_t mesh_calculate_faces(mesh_t *mesh)
@@ -246,7 +283,7 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 		size_t curr_j_frst_i = j * (num_u - 1) + 1;
 		size_t next_j_curr_i = curr_j_curr_i + (num_u - 1);
 		size_t next_j_frst_i = curr_j_frst_i + (num_u - 1);
-		add_faces_to_vec(faces, curr_j_curr_i, curr_j_frst_i, next_j_curr_i, next_j_frst_i);
+		add_faces_new(faces, curr_j_curr_i, curr_j_frst_i, next_j_curr_i, next_j_frst_i);
 	}
 
 	if ((error = add_last_fan(faces, num_u - 1, point3d_vec_size(mesh->points))))
