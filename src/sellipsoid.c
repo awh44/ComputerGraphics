@@ -110,21 +110,25 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 	point3d_vec_t *points = mesh->points;
 	double v = V_INIT;
 
+	//Handle the lone point at the pole.
 	IF_ERROR_GOTO(add_mesh_point(points, s1, s2, A, B, C, 0.0, v), error, exit0);
 
 	//Use integral indices to avoid missing points due to floating point imprecision
+	//Start at j = 1 because the first pole was 0, and stop at num_v - 1 because the
+	//last pole will be num_v - 1.
 	size_t j;
 	for (j = 1, v += dv; j < num_v - 1; j++, v += dv)
 	{
 		size_t i;
 		double u;
-		//- 1 because the point at u == pi is the same at u = -pi
+		//- 1 because the point at u == 0 is the same at u == 2pi
 		for (i = 0, u = 0; i < num_u - 1; i++, u += du)
 		{
 			IF_ERROR_GOTO(add_mesh_point(points, s1, s2, A, B, C, u, v), error, exit0);
 		}
 	}
 
+	//Handle the lone point at the opposite pole.
 	v = -V_INIT;
 	IF_ERROR_GOTO(add_mesh_point(points, s1, s2, A, B, C, 0.0, v), error, exit0);
 
@@ -138,34 +142,38 @@ exit0:
 status_t sellipsoid_calculate_mesh_normals(sellipsoid_t *sellipsoid, mesh_t *mesh)
 {
 	status_t error = SUCCESS;
+
 	size_t num_u = mesh->num_u;
 	size_t num_v = mesh->num_v;
 	double du = calc_du(num_u);
 	double dv = calc_dv(num_v);
-
 	S_EXTRACT(A);
 	S_EXTRACT(B);
 	S_EXTRACT(C);
 	S_EXTRACT(s1);
 	S_EXTRACT(s2);
-
 	point3d_vec_t *normals = mesh->normals;
-
 	double v = V_INIT;
+
+	//Handle the normal for the first pole point.
 	IF_ERROR_GOTO(add_mesh_normal(normals, s1, s2, A, B, C, 0.0, v), error, exit0);
 
 	//Use integral indices to avoid missing points due to floating point imprecision
+	//Start at j = 1 because the first pole was 0, and stop at num_v - 1 because the
+	//last pole will be num_v - 1.
 	size_t j;
 	for (j = 1, v += dv; j < num_v - 1; j++, v += dv)
 	{
 		size_t i;
 		double u;
+		//- 1 because the point at u == 0 is the same at u == 2pi
 		for (i = 0, u = 0; i < num_u - 1; i++, u += du)
 		{
 			IF_ERROR_GOTO(add_mesh_normal(normals, s1, s2, A, B, C, u, v), error, exit0);
 		}
 	}
 
+	//Handle the normal for the last pole point.
 	v = -V_INIT;
 	IF_ERROR_GOTO(add_mesh_normal(normals, s1, s2, A, B, C, 0.0, v), error, exit0);
 

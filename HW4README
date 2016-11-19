@@ -1,0 +1,54 @@
+CS 536
+Assignment 4 - Superellipsoids
+
+The program provided here takes in a variety of command line parameters and outputs, to standard
+out in OpenInventor format, the an approximated triangle mesh surface for the superellipsoid defined
+by those parameters.
+
+The program was written in C on Ubuntu Linux and compiled using gcc. The exact commands to do the
+compilation can be seen in the Makefile. To simply compile using the Makefile, type "make", which will
+create the CG_hw2 executable. The individual modules can be compiled individually as well, with
+different targets in the Makefile producingudifferent object files in the bin/ directory. To clean up
+the directory, type "make clean". This will remove the executable and the files in bin/. To automatically
+generate the files given as examples on the assignment page, type "make outputs/sellipsoidN_type.iv", where
+"N" is the example number and "type" is either "flat" or "smooth."
+
+Note that the main function is located within src/hw4_main.c. Also note that the normal calculations
+are done within src/sellipsoid.c. The loop for generating all of the normals is done in the function
+sellipsoid_calculate_mesh_normals at line 138, and the actual calculation of the normal is done in
+add_mesh_normal at line 83.
+
+The options are as follows. Note that none of them are required.	
+	-u number of u points
+	The number of time to sample along the latitude lines; default value 19. Must be greater than 2.
+	Note that, technically, the provided number is actually one more than the number of points that
+	will be used, to match the examples given. (In other words, the interval is divided up into
+	increments of 2 * pi / num_u for num_u - 1 points, because the num_uth point would be the same as
+	the first point, because u would be a multiple of 2 * pi.)
+
+	-v number of v points
+	The number of times to sample along the longitude lines; default value 9. Must be greater than 2.
+
+	-r s1 value
+	The s1 parameter of the superellipsoid, the shape parameter for the longitude lines; default value 1.
+
+	-t s2 value
+	The s2 parameter of the superellipsoid, the shape parameter for the latitude lines; default value 1.
+
+	-A A value
+	The A paramter of the superellipsoid, the scale factor for the x coordinates; default value 1. Must
+	not be 0.
+
+	-B B value
+	The B paramter of the superellipsoid, the scale factor for the y coordinates; default value 1. Must
+	not be 0.
+
+	-C C value
+	The C paramter of the superellipsoid, the scale factor for the z coordinates; default value 1. Must
+	not be 0.
+
+	-F
+	Indicates that the output mesh should be flat-shaded (default)
+
+	-S
+	Indicates that the output mesh should be smooth-shaded (flat-shaded by default)
