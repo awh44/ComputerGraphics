@@ -84,14 +84,16 @@ void mesh_uninitialize(mesh_t *mesh)
 	free(mesh);
 }
 
-static status_t add_faces(mesh_face_vec_t *faces, size_t row, size_t col, size_t num_per_row)
+static status_t add_faces_to_vec
+(
+	mesh_face_vec_t *faces,
+	size_t curr_row_curr_col,
+	size_t curr_row_next_col,
+	size_t next_row_curr_col,
+	size_t next_row_next_col
+)
 {
 	status_t error = SUCCESS;
-
-	size_t curr_row_curr_col = row * num_per_row + col;
-	size_t curr_row_next_col = curr_row_curr_col + 1;
-	size_t next_row_curr_col = curr_row_curr_col + num_per_row;
-	size_t next_row_next_col = curr_row_next_col + num_per_row;
 
 	mesh_face_t *new_face1;
 	mesh_face_t *new_face2;
@@ -117,6 +119,17 @@ static status_t add_faces(mesh_face_vec_t *faces, size_t row, size_t col, size_t
 
 exit0:
 	return error;
+
+}
+
+static status_t add_faces(mesh_face_vec_t *faces, size_t row, size_t col, size_t num_per_row)
+{
+	size_t curr_row_curr_col = row * num_per_row + col;
+	size_t curr_row_next_col = curr_row_curr_col + 1;
+	size_t next_row_curr_col = curr_row_curr_col + num_per_row;
+	size_t next_row_next_col = curr_row_next_col + num_per_row;
+
+	return add_faces_to_vec(faces, curr_row_curr_col, curr_row_next_col, next_row_curr_col, next_row_next_col);
 }
 
 status_t mesh_calculate_faces(mesh_t *mesh)
@@ -148,23 +161,20 @@ static status_t add_first_fan(mesh_face_vec_t *faces, size_t num_per_row)
 	status_t error = SUCCESS;
 	mesh_face_t *new_face;
 
-	size_t index_in_row;
-	for (index_in_row = 0; index_in_row < num_per_row - 1; index_in_row++)
+	size_t i;
+	for (i = 0; i < num_per_row - 1; i++)
 	{
 		MALLOC_OR_GOTO(new_face, error, exit0);
-
-		//+ 1 and + 2 because of the pole's own index
-		new_face->vertices[0] = 0;
-		new_face->vertices[1] = index_in_row + 1;
-		new_face->vertices[2] = index_in_row + 2;
+		new_face->vertices[0] = i + 1;
+		new_face->vertices[1] = i + 2;
+		new_face->vertices[2] = 0;
 		mesh_face_vec_push_back(faces, new_face);
 	}
 
-	//Because of the "wraparound," the last point in the row has to be treated differently
 	MALLOC_OR_GOTO(new_face, error, exit0);
-	new_face->vertices[0] = 0;
-	new_face->vertices[1] = num_per_row;
-	new_face->vertices[2] = 1;
+	new_face->vertices[0] = i + 1;
+	new_face->vertices[1] = 1;
+	new_face->vertices[2] = 0;
 	mesh_face_vec_push_back(faces, new_face);
 
 exit0:
@@ -175,23 +185,22 @@ static status_t add_last_fan(mesh_face_vec_t *faces, size_t num_per_row, size_t 
 {
 	status_t error = SUCCESS;
 	mesh_face_t *new_face;
+
 	size_t last_index = num_points - 1;
 
-	size_t index_in_row;
-	for (index_in_row = 0; index_in_row < num_per_row - 1; index_in_row++)
+	size_t i;
+	for (i = 0; i < num_per_row - 1; i++)
 	{
 		MALLOC_OR_GOTO(new_face, error, exit0);
-
 		new_face->vertices[0] = last_index;
-		new_face->vertices[1] = last_index - (index_in_row + 1);
-		new_face->vertices[2] = last_index - (index_in_row + 2);
+		new_face->vertices[1] = last_index - (i + 1);
+		new_face->vertices[2] = last_index - (i + 2);
 		mesh_face_vec_push_back(faces, new_face);
 	}
 
-	//Because of the "wraparound," the last point in the row has to be treated differently
 	MALLOC_OR_GOTO(new_face, error, exit0);
 	new_face->vertices[0] = last_index;
-	new_face->vertices[1] = last_index - num_per_row;
+	new_face->vertices[1] = last_index - (i + 1);
 	new_face->vertices[2] = last_index - 1;
 	mesh_face_vec_push_back(faces, new_face);
 
@@ -206,7 +215,7 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 	size_t num_v = mesh->num_v;
 	size_t num_u = mesh->num_u;
 
-	if ((error = add_first_fan(faces, num_u)))
+	if ((error = add_first_fan(faces, num_u - 1)))
 	{
 		goto exit0;
 	}
@@ -224,17 +233,23 @@ status_t mesh_calculate_sellipsoid_faces(mesh_t *mesh)
 	for (j = 0; j < num_v - 3; j++)
 	{
 		size_t i;
-		for (i = 0; i < num_u; i++)
+		for (i = 0; i < num_u - 2; i++)
 		{
 			//+ 1 to account for the pole
-			if ((error = add_faces(faces, j, i + 1, num_u)))
+			if ((error = add_faces(faces, j, i + 1, num_u - 1)))
 			{
 				goto exit0;
 			}
 		}
+
+		size_t curr_j_curr_i = j * (num_u - 1) + i + 1;
+		size_t curr_j_frst_i = j * (num_u - 1) + 1;
+		size_t next_j_curr_i = curr_j_curr_i + (num_u - 1);
+		size_t next_j_frst_i = curr_j_frst_i + (num_u - 1);
+		add_faces_to_vec(faces, curr_j_curr_i, curr_j_frst_i, next_j_curr_i, next_j_frst_i);
 	}
 
-	if ((error = add_last_fan(faces, num_u, point3d_vec_size(mesh->points))))
+	if ((error = add_last_fan(faces, num_u - 1, point3d_vec_size(mesh->points))))
 	{
 		goto exit0;
 	}
@@ -251,8 +266,8 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 		vertexOrdering	COUNTERCLOCKWISE\n\
 	}\n\
 \n\
-	Coordinate3 {\n\
-		point [\n");
+  Coordinate3 {\n\
+    point [\n");
 
 	size_t i;
 
@@ -262,41 +277,41 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 	{
 		point3d_t *point = point3d_vec_get(points, i);
 		fprintf(stream,
-"			%lf %lf %lf,\n", point->x, point->y, point->z);
+"	%lf %lf %lf,\n", point->x, point->y, point->z);
 	}
 
 	fprintf(stream,
-"		]\n\
-	}\n\
+"    ]\n\
+  }\n\
 \n");
 
 	size_t num_normals = point3d_vec_size(mesh->normals);
 	if (num_normals > 0)
 	{
 		fprintf(stream,
-"	NormalBinding {\n\
-		value	PER_VERTEX_INDEXED\n\
+"NormalBinding {\n\
+  value        PER_VERTEX_INDEXED\n\
 	}\n\
 \n\
-	Normal {\n\
-		vector [\n");
+  Normal {\n\
+    vector [\n");
 
 		for (i = 0; i < num_normals; i++)
 		{
 			point3d_t *normal = point3d_vec_get(mesh->normals, i);
 			fprintf(stream,
-"			%lf %lf %lf,\n", normal->x, normal->y, normal->z);
+"	%lf %lf %lf,\n", normal->x, normal->y, normal->z);
 		}
 
 		fprintf(stream,
-"		]\n\
-	}\n");
+"    ]\n\
+ }\n");
 
 	}
 
 	fprintf(stream,
-"	IndexedFaceSet {\n\
-		coordIndex [\n");
+"  IndexedFaceSet {\n\
+    coordIndex [\n");
 
 	mesh_face_vec_t *faces = mesh->faces;
 	size_t num_faces = mesh_face_vec_size(faces);
@@ -304,11 +319,11 @@ void mesh_print_to_iv(mesh_t *mesh, FILE *stream)
 	{
 		mesh_face_t *face = mesh_face_vec_get(faces, i);
 		fprintf(stream,
-	"			%zu, %zu, %zu, -1,\n", face->vertices[0], face->vertices[1], face->vertices[2]);
+	"	 %zu, %zu, %zu, -1,\n", face->vertices[0], face->vertices[1], face->vertices[2]);
 	}
 	fprintf(stream,
-"		]\n\
-	}\n\
+"    ]\n\
+  }\n\
 }\n");
 }
 

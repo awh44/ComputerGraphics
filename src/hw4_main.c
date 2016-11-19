@@ -89,7 +89,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 			{
 				char *end;
 				args->num_u = strtol(optarg, &end, 10);
-				CHECK_OR_RETURN(args->num_u < 2 || *end != '\0');
+				CHECK_OR_RETURN(args->num_u < 3 || *end != '\0');
 				break;
 			}
 
@@ -97,7 +97,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 			{
 				char *end;
 				args->num_v = strtol(optarg, &end, 10);
-				CHECK_OR_RETURN(args->num_v < 2 || *end != '\0');
+				CHECK_OR_RETURN(args->num_v < 3 || *end != '\0');
 				break;
 			}
 
@@ -121,7 +121,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 			{
 				char *end;
 				args->sellipsoid.A = strtod(optarg, &end);
-				CHECK_OR_RETURN(*end != '\0');
+				CHECK_OR_RETURN(*end != '\0' || args->sellipsoid.A == 0.0);
 				break;
 			}
 
@@ -129,7 +129,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 			{
 				char *end;
 				args->sellipsoid.B = strtod(optarg, &end);
-				CHECK_OR_RETURN(*end != '\0');
+				CHECK_OR_RETURN(*end != '\0' || args->sellipsoid.B == 0.0);
 				break;
 			}
 
@@ -137,7 +137,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 			{
 				char *end;
 				args->sellipsoid.C = strtod(optarg, &end);
-				CHECK_OR_RETURN(*end != '\0');
+				CHECK_OR_RETURN(*end != '\0' || args->sellipsoid.C == 0.0);
 				break;
 			}
 
@@ -173,8 +173,8 @@ void usage(char *prog)
 {
 	fprintf(stderr,
 		"usage: %s\n"
-		"	[-u 1 < number of u samples] [-v 1 < number of v samples]\n"
-		"	[-r s1 value] [-t s2 value] [-A A value] [-B B value] [-C C value]\n"
+		"	[-u 2 < number of u samples] [-v 2 < number of v samples]\n"
+		"	[-r s1 value] [-t s2 value] [-A A value != 0] [-B B value != 0] [-C C value != 0]\n"
 		"	[-S smooth-shaded or -F flat-shaded]\n", prog);
 }
 

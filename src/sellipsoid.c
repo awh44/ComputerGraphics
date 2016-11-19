@@ -9,20 +9,49 @@
 #include "point3d_vec.h"
 #include "status.h"
 
-static double either(double w, double m, double (*func)(double))
-{
-	double funcw = func(w);
-	return sgn(funcw) * pow(fabs(funcw), m);
-}
+#define POINT_INIT_OR_GOTO(point, errvar, label)\
+	do\
+	{\
+		if ((point = point3d_initialize()) == NULL)\
+		{\
+			errvar = OUT_OF_MEM;\
+			goto label;\
+		}\
+	} while (0)
+
+#define POINT_INIT_COORDS_OR_GOTO(point, x, y, z, errvar, label)\
+	do\
+	{\
+		if ((point = point3d_initialize_with_coords((x), (y), (z))) == NULL)\
+		{\
+			errvar = OUT_OF_MEM;\
+			goto label;\
+		}\
+	} while (0)
+
+#define S_EXTRACT(var) double var = sellipsoid->var
+
+#define IF_ERROR_GOTO(expr, errvar, label)\
+	do\
+	{\
+		if ((errvar = (expr)))\
+		{\
+			goto label;\
+		}\
+	} while (0)
+
+#ifndef V_INIT
+	#define V_INIT (M_PI / 2)
+#endif
 
 static double c(double w, double m)
 {
-	return either(w, m, cos);
+	return sgn(cos(w)) * pow(fabs(cos(w)), m);
 }
 
 static double s(double w, double m)
 {
-	return either(w, m, sin);
+	return sgn(sin(w)) * pow(fabs(sin(w)), m);
 }
 
 static double inline calc_du(size_t num_u)
@@ -32,7 +61,39 @@ static double inline calc_du(size_t num_u)
 
 static double inline calc_dv(size_t num_v)
 {
-	return M_PI / (((double) num_v) - 1.0);
+	return -sgn(V_INIT) * fabs(-V_INIT - V_INIT) / (((double) num_v) - 1.0);
+}
+
+static status_t add_mesh_point(point3d_vec_t *points, double s1, double s2, double A, double B, double C, double u, double v)
+{
+	status_t error = SUCCESS;
+
+	point3d_t *new_point;
+	POINT_INIT_OR_GOTO(new_point, error, exit0);
+	new_point->x = A * c(v, s1) * c(u, s2);
+	new_point->y = B * c(v, s1) * s(u, s2);
+	new_point->z = C * s(v, s1);
+
+	point3d_vec_push_back(points, new_point);
+
+exit0:
+	return error;
+}
+
+static status_t add_mesh_normal(point3d_vec_t *normals, double s1, double s2, double A, double B, double C, double u, double v)
+{
+	status_t error = SUCCESS;
+
+	point3d_t *normal;
+	POINT_INIT_OR_GOTO(normal, error, exit0);
+	normal->x = (1.0 / A) * c(v, 2 - s1) * c(u, 2 - s2);
+	normal->y = (1.0 / B) * c(v, 2 - s1) * s(u, 2 - s2);
+	normal->z = (1.0 / C) * s(v, 2 - s1);
+
+	point3d_vec_push_back(normals, normal);
+
+exit0:
+	return error;
 }
 
 status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh, size_t num_u, size_t num_v)
@@ -41,58 +102,31 @@ status_t sellipsoid_calculate_mesh_points(sellipsoid_t *sellipsoid, mesh_t *mesh
 
 	double du = calc_du(num_u);
 	double dv = calc_dv(num_v);
-	double s1 = sellipsoid->s1;
-	double s2 = sellipsoid->s2;
-	double A = sellipsoid->A;
-	double B = sellipsoid->B;
-	double C = sellipsoid->C;
-
+	S_EXTRACT(s1);
+	S_EXTRACT(s2);
+	S_EXTRACT(A);
+	S_EXTRACT(B);
+	S_EXTRACT(C);
 	point3d_vec_t *points = mesh->points;
+	double v = V_INIT;
 
-	point3d_t *first_pole = point3d_initialize_with_coords(0, 0, C * s(-M_PI / 2, s1));
-	if (first_pole == NULL)
-	{
-		error = OUT_OF_MEM;
-		goto exit0;
-	}
-	point3d_vec_push_back(points, first_pole);
+	IF_ERROR_GOTO(add_mesh_point(points, s1, s2, A, B, C, 0.0, v), error, exit0);
 
 	//Use integral indices to avoid missing points due to floating point imprecision
 	size_t j;
-	double v;
-	for (j = 1, v = -M_PI / 2 + dv; j < num_v - 1; j++, v += dv)
+	for (j = 1, v += dv; j < num_v - 1; j++, v += dv)
 	{
-		double c_v_s1 = c(v, s1);
-		double x_scale = A * c_v_s1;
-		double y_scale = B * c_v_s1;
-		double z = C * s(v, s1);
-
 		size_t i;
 		double u;
-		for (i = 0, u = -M_PI; i < num_u; i++, u += du)
+		//- 1 because the point at u == pi is the same at u = -pi
+		for (i = 0, u = 0; i < num_u - 1; i++, u += du)
 		{
-			point3d_t *new_point;
-			if ((new_point = point3d_initialize()) == NULL)
-			{
-				error = OUT_OF_MEM;
-				goto exit0;
-			}
-
-			new_point->x = x_scale * c(u, s2);
-			new_point->y = y_scale * s(u, s2);
-			new_point->z = z;
-
-			point3d_vec_push_back(points, new_point);
+			IF_ERROR_GOTO(add_mesh_point(points, s1, s2, A, B, C, u, v), error, exit0);
 		}
 	}
 
-	point3d_t *last_pole = point3d_initialize_with_coords(0, 0, C * s(M_PI / 2, s1));
-	if (last_pole == NULL)
-	{
-		error = OUT_OF_MEM;
-		goto exit0;
-	}
-	point3d_vec_push_back(points, last_pole);
+	v = -V_INIT;
+	IF_ERROR_GOTO(add_mesh_point(points, s1, s2, A, B, C, 0.0, v), error, exit0);
 
 	mesh->num_u = num_u;
 	mesh->num_v = num_v;
@@ -108,58 +142,32 @@ status_t sellipsoid_calculate_mesh_normals(sellipsoid_t *sellipsoid, mesh_t *mes
 	size_t num_v = mesh->num_v;
 	double du = calc_du(num_u);
 	double dv = calc_dv(num_v);
-	double two_min_s1 = 2 - sellipsoid->s1;
-	double two_min_s2 = 2 - sellipsoid->s2;
-	double one_over_A = 1 / sellipsoid->A;
-	double one_over_B = 1 / sellipsoid->B;
-	double one_over_C = 1 / sellipsoid->C;
+
+	S_EXTRACT(A);
+	S_EXTRACT(B);
+	S_EXTRACT(C);
+	S_EXTRACT(s1);
+	S_EXTRACT(s2);
 
 	point3d_vec_t *normals = mesh->normals;
 
-	point3d_t *first_norm =
-		point3d_initialize_with_coords(0, 0, one_over_C * s(-M_PI / 2, two_min_s1));
-	if (first_norm == NULL)
-	{
-		error = OUT_OF_MEM;
-		goto exit0;
-	}
-	point3d_vec_push_back(normals, first_norm);
+	double v = V_INIT;
+	IF_ERROR_GOTO(add_mesh_normal(normals, s1, s2, A, B, C, 0.0, v), error, exit0);
 
+	//Use integral indices to avoid missing points due to floating point imprecision
 	size_t j;
-	double v;
-	for (j = 1, v = -M_PI / 2 + dv; j < num_v - 1; j++, v += dv)
+	for (j = 1, v += dv; j < num_v - 1; j++, v += dv)
 	{
-		double c_v_2_min_s1 = c(v, two_min_s1);
-		double x_scale = one_over_A * c_v_2_min_s1;
-		double y_scale = one_over_B * c_v_2_min_s1;
-		double z = one_over_C * s(v, two_min_s1);
-
 		size_t i;
 		double u;
-		for (i = 0, u = -M_PI; i < num_u; i++, u += du)
+		for (i = 0, u = 0; i < num_u - 1; i++, u += du)
 		{
-			point3d_t *normal;
-			if ((normal = point3d_initialize()) == NULL)
-			{
-				error = OUT_OF_MEM;
-				goto exit0;
-			}
-
-			normal->x = x_scale * c(u, two_min_s2);
-			normal->y = y_scale * s(u, two_min_s2);
-			normal->z = z;
-			point3d_vec_push_back(normals, normal);
+			IF_ERROR_GOTO(add_mesh_normal(normals, s1, s2, A, B, C, u, v), error, exit0);
 		}
 	}
 
-	point3d_t *last_norm =
-		point3d_initialize_with_coords(0, 0, one_over_C * s(M_PI / 2, two_min_s1));
-	if (last_norm == NULL)
-	{
-		error = OUT_OF_MEM;
-		goto exit0;
-	}
-	point3d_vec_push_back(normals, last_norm);
+	v = -V_INIT;
+	IF_ERROR_GOTO(add_mesh_normal(normals, s1, s2, A, B, C, 0.0, v), error, exit0);
 
 exit0:
 	return error;
