@@ -20,4 +20,14 @@ typedef enum
 		}\
 	} while (0)
 
+#define INITIALIZE_OR_OUT_OF_MEM(var, init, errvar, label)\
+	do\
+	{\
+		if (((var) = (init)) == NULL)\
+		{\
+			(errvar) = OUT_OF_MEM;\
+			goto label;\
+		}\
+	} while (0)
+
 #endif

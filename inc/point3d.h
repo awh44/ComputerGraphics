@@ -33,6 +33,13 @@ point3d_t *point3d_initialize_with_coords(double x, double y, double z);
 point3d_t *point3d_copy(point3d_t *orig);
 
 /*
+ * point3d_assign - copies the data values from the source point into the destination point
+ * @param dst - the point into which to copy the values
+ * @param src - the point from which to copy the values
+ */
+void point3d_assign(point3d_t *dst, point3d_t *src);
+
+/*
  * point3d_uninitialize - uninitializes a 3D point, freeing associated memory
  * @param point - the point to uninitialize
  */

@@ -38,9 +38,14 @@ point3d_t *point3d_copy(point3d_t *orig)
 		return NULL;
 	}
 
-	memcpy(copy, orig, sizeof *copy);
+	point3d_assign(copy, orig);
 
 	return copy;
+}
+
+void point3d_assign(point3d_t *dst, point3d_t *src)
+{
+	memcpy(dst, src, sizeof *dst);
 }
 
 void point3d_uninitialize(point3d_t *point)

@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "cuboid.h"
 #include "matrix.h"
+#include "point3d.h"
 #include "status.h"
 
 typedef struct
@@ -25,42 +27,23 @@ int main(int argc, char **argv)
 		goto exit0;
 	}
 
-	matrix_t *c;
-	if ((c = matrix_initialize(3, 3)) == NULL)
-	{
-		error = OUT_OF_MEM;
-		goto exit0;
-	}
+	cuboid_t *cuboid;
+	INITIALIZE_OR_OUT_OF_MEM(cuboid, cuboid_initialize(), error, exit0);
 
-	matrix_t *a;
-	if ((a = matrix_initialize(3, 2)) == NULL)
-	{
-		error = OUT_OF_MEM;
-		goto exit1;
-	}
+	point3d_t *lowleft, *upright;
+	INITIALIZE_OR_OUT_OF_MEM(lowleft, point3d_initialize_with_coords(-2, -2, 0), error, exit1);
+	INITIALIZE_OR_OUT_OF_MEM(upright, point3d_initialize_with_coords(2, 2, 1), error, exit2);
 
-	matrix_t *b;
-	if ((b = matrix_initialize(2, 3)) == NULL)
-	{
-		error = OUT_OF_MEM;
-		goto exit2;
-	}
+	cuboid_set_corners(cuboid, lowleft, upright);
 
-	double a_arr[] = { 1, 4, 2, 5, 3, 6 };
-	double b_arr[] = { 7, 9, 11, 8, 10, 12 };
-
-	matrix_assign_from_array(a, a_arr);
-	matrix_assign_from_array(b, b_arr);
-
-	matrix_multiply(c, a, b);
-	matrix_print(c, stderr);
+	cuboid_print_to_iv(cuboid, stdout);
 
 exit3:
-	matrix_uninitialize(b);
+	point3d_uninitialize(upright);
 exit2:
-	matrix_uninitialize(a);
+	point3d_uninitialize(lowleft);
 exit1:
-	matrix_uninitialize(c);
+	cuboid_uninitialize(cuboid);
 exit0:
 	return error;
 }
