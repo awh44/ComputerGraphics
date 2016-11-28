@@ -40,7 +40,7 @@ size_t matrix_rows(matrix_t *m);
  * @param m - the matrix of which to get the number of columns
  * @return - the number of columns in the matrix
  */
-size_t matrix_cols(matrix_m *m);
+size_t matrix_cols(matrix_t *m);
 
 /*
  * matrix_get - retrieves the value at the given row and column in the matrix.
