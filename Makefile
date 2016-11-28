@@ -10,6 +10,10 @@ HW1_DEPENDS=$(BIN)hw1_main.o $(BIN)graphics.o $(BIN)bezier.o $(BIN)polyline.o $(
 HW2_DEPENDS=$(BIN)hw2_main.o $(BIN)graphics.o $(BIN)catmullrom.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW3_DEPENDS=$(BIN)hw3_main.o $(BIN)graphics.o $(BIN)bezier_surface.o $(BIN)mesh.o $(BIN)mesh_face_vec.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW4_DEPENDS=$(BIN)hw4_main.o $(BIN)sellipsoid.o $(BIN)mesh.o $(BIN)mesh_face_vec.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
+HW5_DEPENDS=$(BIN)hw5_main.o $(BIN)matrix.o
+
+CG_hw5: $(HW5_DEPENDS)
+	$(CC) $(PROG_OPTS)
 
 CG_hw4: $(HW4_DEPENDS)
 	$(CC) $(PROG_OPTS)
@@ -22,6 +26,9 @@ CG_hw2: $(HW2_DEPENDS)
 
 CG_hw1: $(HW1_DEPENDS)
 	$(CC) $(PROG_OPTS)
+
+$(BIN)hw5_main.o: $(SRC)hw5_main.c
+	$(CC) $(BIN_OPTS)
 
 $(BIN)hw4_main.o: $(SRC)hw4_main.c
 	$(CC) $(BIN_OPTS)
@@ -63,6 +70,9 @@ $(BIN)point3d.o: $(SRC)point3d.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)point3d_vec.o: $(SRC)point3d_vec.c
+	$(CC) $(BIN_OPTS)
+
+$(BIN)matrix.o: $(SRC)matrix.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)awh44_math.o: $(SRC)awh44_math.c
