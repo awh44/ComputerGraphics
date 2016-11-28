@@ -59,14 +59,16 @@ void polyline_print_to_iv(polyline_t *poly, FILE *stream)
 {
 	fprintf(stream,
 "Separator {\n\
-LightModel {\n\
-model BASE_COLOR\n\
-}\n\
-Material {\n\
-	diffuseColor 1.0 0.2 0.2\n\
-}\n\
-Coordinate3 {\n\
-	point [\n");
+	LightModel {\n\
+		model BASE_COLOR\n\
+	}\n\
+\n\
+	Material {\n\
+		diffuseColor 1.0 0.2 0.2\n\
+	}\n\
+\n\
+	Coordinate3 {\n\
+		point [\n");
 
 	size_t num = point3d_vec_size(poly->points);
 	size_t i;
@@ -74,23 +76,24 @@ Coordinate3 {\n\
 	{
 		point3d_t *point = point3d_vec_get(poly->points, i);
 		fprintf(stream,
-"	%lf %lf %lf,\n", point->x, point->y, point->z);
+"			%lf %lf %lf,\n", point->x, point->y, point->z);
 	}
 
 	fprintf(stream,
-"	]\n\
+"		]\n\
 }\n\
-IndexedLineSet {\n\
-coordIndex [\n");
+	IndexedLineSet {\n\
+		coordIndex [\n");
 
 	for (i = 0; i < num; i++)
 	{
-		fprintf(stream, "%zu, ", i);
+		fprintf(stream,
+"			%zu,\n", i);
 	}
 
 	fprintf(stream,
-"-1,\n\
-	]\n\
-}\n\
+"			-1,\n\
+		]\n\
+	}\n\
 }\n");
 }
