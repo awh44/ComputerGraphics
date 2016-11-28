@@ -60,7 +60,7 @@ void cuboid_print_to_iv(cuboid_t *cuboid, FILE *stream)
 	double urz = upright->z;
 
 	fprintf(stream,
-"Seperator {\n\
+"Separator {\n\
 	Coordinate3 {\n\
 		point [\n\
 			%lf %lf %lf,\n\
