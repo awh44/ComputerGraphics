@@ -29,6 +29,20 @@ void matrix_uninitialize(matrix_t *m);
 void matrix_assign_from_array(matrix_t *m, double *array);
 
 /*
+ * matrix_rows - retrieves the number of rows in the given matrix.
+ * @param m - the matrix of which to get the number of rows
+ * @return - the number of rows in the matrix
+ */
+size_t matrix_rows(matrix_t *m);
+
+/*
+ * matrix_cols - retrieves the number of columns in the given matrix.
+ * @param m - the matrix of which to get the number of columns
+ * @return - the number of columns in the matrix
+ */
+size_t matrix_cols(matrix_m *m);
+
+/*
  * matrix_get - retrieves the value at the given row and column in the matrix.
  * Note that no bounds checking is done, so the row and column must reside
  * within the matrix.

@@ -52,6 +52,16 @@ void matrix_assign_from_array(matrix_t *m, double *array)
 	memcpy(m->elems, array, m->rows * m->cols * sizeof *m->elems);
 }
 
+size_t matrix_rows(matrix_t *m)
+{
+	return m->rows;
+}
+
+size_t matrix_cols(matrix_t *m)
+{
+	return m->cols;
+}
+
 double matrix_get(matrix_t *m, size_t row, size_t col)
 {
 	return ELEMENT(m, row, col);
