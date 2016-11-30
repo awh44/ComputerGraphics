@@ -44,15 +44,53 @@ int main(int argc, char **argv)
 	matrix_multiply(m, translate, rotate);
 
 	matrix_t *p1pts[CUBOID_POINTS];
-	double ll[] = { -0.5, -0.5, 0 };
-	double ur[] = { 0.5, 0.5, args.l1 };
-	IF_ERROR_GOTO(cuboid_initialize_matrices(p1pts, ll, ur), error, exit4);
+	double ll1[] = { -0.5, -0.5, 0 };
+	double ur1[] = { 0.5, 0.5, args.l1 };
+	IF_ERROR_GOTO(cuboid_initialize_matrices(p1pts, ll1, ur1), error, exit4);
+
+	matrix_t *tmpvector;
+	INITIALIZE_OR_OUT_OF_MEM(tmpvector, matrix_initialize(4, 1), error, exit5);
 	for (size_t i = 0; i < CUBOID_POINTS; i++)
 	{
-		IF_ERROR_GOTO(matrix_multiply_alias(p1pts[i], m, p1pts[i]), error, exit5);
+		matrix_multiply(tmpvector, m, p1pts[i]);
+		matrix_assign(p1pts[i], tmpvector);
 	}
 	cuboid_print_matrices_to_iv(p1pts, stdout);
 
+	translation_matrix_assign(translate, 0, 0, args.l1);
+	rotation_matrix_y_assign(rotate, args.theta2);
+
+	matrix_t *tmpmatrix1, *tmpmatrix2;
+	INITIALIZE_OR_OUT_OF_MEM(tmpmatrix1, matrix_initialize(4, 4), error, exit6);
+	INITIALIZE_OR_OUT_OF_MEM(tmpmatrix2, matrix_initialize(4, 4), error, exit7);
+
+	matrix_multiply(tmpmatrix1, translate, rotate);
+	matrix_multiply(tmpmatrix2, m, tmpmatrix1);
+	matrix_assign(m, tmpmatrix2);
+
+	matrix_t *p2pts[CUBOID_POINTS];
+	double ll2[] = { -0.5, -0.5, 0 };
+	double ur2[] = { 0.5, 0.5, args.l2 };
+	IF_ERROR_GOTO(cuboid_initialize_matrices(p2pts, ll2, ur2), error, exit8);
+
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_multiply(tmpvector, m, p2pts[i]);
+		matrix_assign(p2pts[i], tmpvector);
+	}
+	cuboid_print_matrices_to_iv(p2pts, stdout);
+
+exit9:
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_uninitialize(p2pts[i]);
+	}
+exit8:
+	matrix_uninitialize(tmpmatrix2);
+exit7:
+	matrix_uninitialize(tmpmatrix1);
+exit6:
+	matrix_uninitialize(tmpvector);
 exit5:
 	for (size_t i = 0; i < CUBOID_POINTS; i++)
 	{
