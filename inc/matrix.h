@@ -6,12 +6,24 @@
 typedef struct matrix_t matrix_t;
 
 /*
- * matrix_initialize - initializes a new matrix with the given rows and columns
+ * matrix_initialize - initializes a new matrix with the given rows and columns,
+ * with all values as zeros
  * @param rows - the number of rows in the matrix
  * @param cols - the number of columns in the matrix
  * @return - the new matrix
  */
 matrix_t *matrix_initialize(size_t rows, size_t cols);
+
+/*
+ * matrix_initialize_with_array - initializes a new matrix with the given rows
+ * and columns, initialized with the values specified by the array treated as
+ * being in row-major form. Note that no bounds checking can be done on the
+ * array, to it must be at least as large as rows * cols
+ * @param rows - the number of rows in the matrix
+ * @param cols - the number of columns in the matrix
+ * @return - the new matrix
+ */
+matrix_t *matrix_initialize_with_array(size_t rows, size_t cols, double *array);
 
 /*
  * matrix_uninitialize - uninitializes the given matrix
@@ -68,7 +80,7 @@ void matrix_set(matrix_t *m, size_t row, size_t col, double val);
  * so the number of columns in a must match the number of rows in b, and the
  * number of rows in c must match the number of rows in a and the number of 
  * columns in c must match the number of columns in b. Also note that c cannot
- * be the same matrix as either a or b.
+ * alias either a or b.
  * @param c - the matrix in which to store the result of the multiplication
  * @param a - the left-hand matrix in the multiplication
  * @param b - the right-hand matri in the multiplication

@@ -30,6 +30,7 @@ matrix_t *matrix_initialize(size_t rows, size_t cols)
 
 	m->rows = rows;
 	m->cols = cols;
+
 	goto success;
 
 error1:
@@ -39,6 +40,35 @@ error0:
 
 success:
 	return m;
+}
+
+matrix_t *matrix_initialize_with_array(size_t rows, size_t cols, double *array)
+{
+	matrix_t *m;
+	if ((m = malloc(sizeof *m)) == NULL)
+	{
+		goto error0;
+	}
+
+	if ((m->elems = malloc(rows * cols * sizeof *m->elems)) == NULL)
+	{
+		goto error1;
+	}
+	memcpy(m->elems, array, rows * cols * sizeof *m->elems);
+
+	m->rows = rows;
+	m->cols = cols;
+
+	goto success;
+
+error1:
+	free(m);
+	m = NULL;
+error0:
+
+success:
+	return m;
+
 }
 
 void matrix_uninitialize(matrix_t *m)
