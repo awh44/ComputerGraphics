@@ -109,6 +109,10 @@ void matrix_set(matrix_t *m, size_t row, size_t col, double val)
 
 static void matrix_multiply_internal(double *c, double *a, double *b, size_t arows, size_t acols, size_t bcols)
 {
+	//Again, this doesn't guarantee the actual value 0.0, but that's fine for
+	//my purposes. Also, I'd need to do some benchmarking to see whether
+	//memset'ing and using this loop structure or using a "regular" i, j, k
+	//loop structure and not having to memset is better.
 	memset(c, 0, arows * bcols * sizeof *c);
 	for (size_t i = 0; i < arows; i++)
 	{
