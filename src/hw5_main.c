@@ -4,6 +4,7 @@
 
 #include "awh44_math.h"
 #include "cuboid.h"
+#include "hierarchal.h"
 #include "matrix.h"
 #include "point3d.h"
 #include "status.h"
@@ -18,6 +19,116 @@ typedef struct
 status_t parse_args(int argc, char **argv, args_t *args);
 void usage(char *prog);
 
+void point_draw(model_t *model, matrix_t *transform)
+{
+	matrix_t *tmp = matrix_initialize(4, 1);
+	matrix_multiply(tmp, transform, model->matrices[0]);
+	matrix_assign(model->matrices[0], tmp);
+	matrix_uninitialize(tmp);
+	point3d_print_matrix_to_iv(model->matrices[0], stdout, 0.2);
+}
+
+status_t point_model_initialize(hierarchal_t *model, double *loc, double *pt)
+{
+	status_t error = SUCCESS;
+
+	INITIALIZE_OR_OUT_OF_MEM(model->model.matrices, malloc(sizeof *model->model.matrices), error, error0);
+
+	IF_ERROR_GOTO
+	(
+		point3d_initialize_matrix(model->model.matrices, (double[]) { 0.0, 0.0, 0.0 }),
+		error, error1;
+	);
+
+	INITIALIZE_OR_OUT_OF_MEM
+	(
+		model->from_parent,
+		translation_matrix(pt[0], pt[1], pt[2]),
+		error, error2
+	);
+
+	model->draw = point_draw;
+	model->sibling = NULL;
+	model->child = NULL;
+
+	goto success;
+
+error2:
+	matrix_uninitialize(model->model.matrices[0]);
+error1:
+	free(model->model.matrices);
+error0:
+
+success:
+	return error;
+}
+
+void point_model_uninitialize(hierarchal_t *model)
+{
+	matrix_uninitialize(model->model.matrices[0]);
+	free(model->model.matrices);
+	matrix_uninitialize(model->from_parent);
+}
+
+void cuboid_draw(model_t *model, matrix_t *transform)
+{
+	matrix_t *tmp = matrix_initialize(4, 1);
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_multiply(tmp, transform, model->matrices[i]);
+		matrix_assign(model->matrices[i], tmp);
+	}
+	matrix_uninitialize(tmp);
+	cuboid_print_matrices_to_iv(model->matrices, stdout);
+}
+
+status_t cuboid_model_initialize(hierarchal_t *model, double *ll, double *ur, double *pt, double pr, rotatedir_t dir)
+{
+	status_t error = SUCCESS;
+
+	INITIALIZE_OR_OUT_OF_MEM(model->model.matrices, malloc(CUBOID_POINTS * sizeof *model->model.matrices), error, error0);
+
+	IF_ERROR_GOTO(cuboid_initialize_matrices(model->model.matrices, ll, ur), error, error1);
+	INITIALIZE_OR_OUT_OF_MEM(model->from_parent, matrix_initialize(4, 4), error, error2);
+
+	matrix_t *translate;
+	INITIALIZE_OR_OUT_OF_MEM(translate, translation_matrix(pt[0], pt[1], pt[2]), error, error2);
+
+	matrix_t *rotate;
+	if ((rotate = rotation_matrix(pr, dir)) == NULL)
+	{
+		matrix_uninitialize(translate);
+		error = OUT_OF_MEM;
+		goto error2;
+	}
+
+	matrix_multiply(model->from_parent, translate, rotate);
+	matrix_uninitialize(translate);
+	matrix_uninitialize(rotate);
+
+	model->draw = cuboid_draw;
+	model->sibling = NULL;
+	model->child = NULL;
+
+	goto success;
+
+error2:
+	cuboid_uninitialize_matrices(model->model.matrices);
+error1:
+	free(model->model.matrices);
+error0:
+
+success:
+	return error;
+}
+
+void cuboid_model_uninitialize(hierarchal_t *model)
+{
+	cuboid_uninitialize_matrices(model->model.matrices);
+	free(model->model.matrices);
+	matrix_uninitialize(model->from_parent);
+}
+
 int main(int argc, char **argv)
 {
 	status_t error = SUCCESS;
@@ -29,107 +140,86 @@ int main(int argc, char **argv)
 		goto exit0;
 	}
 
-	matrix_t *p0pts[CUBOID_POINTS];
-	double ll0[] = { -2, -2, 0 };
-	double ur0[] = { 2, 2, 1 };
-	IF_ERROR_GOTO(cuboid_initialize_matrices(p0pts, ll0, ur0), error, exit0);
-	cuboid_print_matrices_to_iv(p0pts, stdout);
-
-	matrix_t *translate;
-	INITIALIZE_OR_OUT_OF_MEM(translate, translation_matrix(0, 0, 1), error, exit1);
-	matrix_t *rotate;
-	INITIALIZE_OR_OUT_OF_MEM(rotate, rotation_matrix_z(args.theta1), error, exit2);
-	matrix_t *m;
-	INITIALIZE_OR_OUT_OF_MEM(m, matrix_initialize(4, 4), error, exit3);
-	matrix_multiply(m, translate, rotate);
-
-	matrix_t *p1pts[CUBOID_POINTS];
-	double ll1[] = { -0.5, -0.5, 0 };
-	double ur1[] = { 0.5, 0.5, args.l1 };
-	IF_ERROR_GOTO(cuboid_initialize_matrices(p1pts, ll1, ur1), error, exit4);
-
-	matrix_t *tmpvector;
-	INITIALIZE_OR_OUT_OF_MEM(tmpvector, matrix_initialize(4, 1), error, exit5);
-	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	double ll[4][3] =
 	{
-		matrix_multiply(tmpvector, m, p1pts[i]);
-		matrix_assign(p1pts[i], tmpvector);
-	}
-	cuboid_print_matrices_to_iv(p1pts, stdout);
+		{ -2, -2, 0 },
+		{ -.5, -.5, 0 },
+		{ -.5, -.5, 0 },
+		{ -.5, -.5, 0 },
 
-	translation_matrix_assign(translate, 0, 0, args.l1);
-	rotation_matrix_y_assign(rotate, args.theta2);
+	};
 
-	matrix_t *tmpmatrix1, *tmpmatrix2;
-	INITIALIZE_OR_OUT_OF_MEM(tmpmatrix1, matrix_initialize(4, 4), error, exit6);
-	INITIALIZE_OR_OUT_OF_MEM(tmpmatrix2, matrix_initialize(4, 4), error, exit7);
-
-	matrix_multiply(tmpmatrix1, translate, rotate);
-	matrix_multiply(tmpmatrix2, m, tmpmatrix1);
-	matrix_assign(m, tmpmatrix2);
-
-	matrix_t *p2pts[CUBOID_POINTS];
-	double ll2[] = { -0.5, -0.5, 0 };
-	double ur2[] = { 0.5, 0.5, args.l2 };
-	IF_ERROR_GOTO(cuboid_initialize_matrices(p2pts, ll2, ur2), error, exit8);
-
-	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	double ur[4][3] =
 	{
-		matrix_multiply(tmpvector, m, p2pts[i]);
-		matrix_assign(p2pts[i], tmpvector);
-	}
-	cuboid_print_matrices_to_iv(p2pts, stdout);
+		{ 2, 2, 1 },
+		{ .5, .5, args.l1 },
+		{ .5, .5, args.l2 },
+		{ .5, .5, args.l3 },
+	};
 
-	translation_matrix_assign(translate, 0, 0, args.l2);
-	rotation_matrix_y_assign(rotate, args.theta3);
-	matrix_multiply(tmpmatrix1, translate, rotate);
-	matrix_multiply(tmpmatrix2, m, tmpmatrix1);
-	matrix_assign(m, tmpmatrix2);
-
-	matrix_t *p3pts[CUBOID_POINTS];
-	double ll3[] = { -0.5, -0.5, 0 };
-	double ur3[] = { 0.5, 0.5, args.l3 };
-	IF_ERROR_GOTO(cuboid_initialize_matrices(p3pts, ll3, ur3), error, exit9);
-
-	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	double trans[4][3] =
 	{
-		matrix_multiply(tmpvector, m, p3pts[i]);
-		matrix_assign(p3pts[i], tmpvector);
-	}
-	cuboid_print_matrices_to_iv(p3pts, stdout);
+		{ 0, 0, 0 },
+		{ 0, 0, ur[0][2] },
+		{ 0, 0, ur[1][2] },
+		{ 0, 0, ur[2][2] },
+	};
 
-exit10:
-	for (size_t i = 0; i < CUBOID_POINTS; i++)
-	{
-		matrix_uninitialize(p3pts[i]);
-	}
-exit9:
-	for (size_t i = 0; i < CUBOID_POINTS; i++)
-	{
-		matrix_uninitialize(p2pts[i]);
-	}
-exit8:
-	matrix_uninitialize(tmpmatrix2);
+	hierarchal_t models[6];
+
+	IF_ERROR_GOTO
+	(
+		point_model_initialize(models + 0, (double[]) { 0.0, 0.0, 0.0 }, (double[]) { 0.0, 0.0, 0.0 }), error, exit0
+	);
+	models[0].child = models + 1;
+
+	IF_ERROR_GOTO
+	(
+		cuboid_model_initialize(models + 1, ll[0], ur[0], trans[0], 0, ROTATE_X), error, exit1
+	);
+	models[1].child = models + 2;
+
+	IF_ERROR_GOTO
+	(
+		cuboid_model_initialize(models + 2, ll[1], ur[1], trans[1], args.theta1, ROTATE_Z), error, exit2
+	);
+	models[2].child = models + 3;
+
+	IF_ERROR_GOTO
+	(
+		cuboid_model_initialize(models + 3, ll[2], ur[2], trans[2], args.theta2, ROTATE_Y), error, exit3
+	);
+	models[3].child = models + 4;
+
+	IF_ERROR_GOTO
+	(
+		cuboid_model_initialize(models + 4, ll[3], ur[3], trans[3], args.theta3, ROTATE_Y), error, exit4
+	);
+	models[4].child = models + 5;
+
+	IF_ERROR_GOTO
+	(
+		point_model_initialize(models + 5, (double[]) { 0.0, 0.0, 0.0 }, (double[]) { 0.0, 0.0, ur[3][2] }), error, exit5
+	);
+
+	matrix_t *initial_transform;
+	INITIALIZE_OR_OUT_OF_MEM(initial_transform, translation_matrix(0, 0, 0), error, exit6);
+	IF_ERROR_GOTO(hierarchal_draw(models + 0, initial_transform), error, exit7);
+
 exit7:
-	matrix_uninitialize(tmpmatrix1);
+	matrix_uninitialize(initial_transform);
 exit6:
-	matrix_uninitialize(tmpvector);
+	point_model_uninitialize(models + 5);
 exit5:
-	for (size_t i = 0; i < CUBOID_POINTS; i++)
-	{
-		matrix_uninitialize(p1pts[i]);
-	}
+	cuboid_model_uninitialize(models + 4);
 exit4:
-	matrix_uninitialize(m);
+	cuboid_model_uninitialize(models + 3);
 exit3:
-	matrix_uninitialize(rotate);
+	cuboid_model_uninitialize(models + 2);
 exit2:
-	matrix_uninitialize(translate);
+	cuboid_model_uninitialize(models + 1);
 exit1:
-	for (size_t i = 0; i < CUBOID_POINTS; i++)
-	{
-		matrix_uninitialize(p0pts[i]);
-	}
+	point_model_uninitialize(models + 0);
 exit0:
 	return error;
 }

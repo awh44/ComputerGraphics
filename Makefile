@@ -10,7 +10,7 @@ HW1_DEPENDS=$(BIN)hw1_main.o $(BIN)graphics.o $(BIN)bezier.o $(BIN)polyline.o $(
 HW2_DEPENDS=$(BIN)hw2_main.o $(BIN)graphics.o $(BIN)catmullrom.o $(BIN)bezier.o $(BIN)polyline.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW3_DEPENDS=$(BIN)hw3_main.o $(BIN)graphics.o $(BIN)bezier_surface.o $(BIN)mesh.o $(BIN)mesh_face_vec.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
 HW4_DEPENDS=$(BIN)hw4_main.o $(BIN)sellipsoid.o $(BIN)mesh.o $(BIN)mesh_face_vec.o $(BIN)point3d.o $(BIN)point3d_vec.o $(BIN)awh44_math.o
-HW5_DEPENDS=$(BIN)hw5_main.o $(BIN)transforms.o $(BIN)cuboid.o $(BIN)matrix.o $(BIN)point3d.o
+HW5_DEPENDS=$(BIN)hw5_main.o $(BIN)hierarchal.o $(BIN)transforms.o $(BIN)cuboid.o $(BIN)matrix.o $(BIN)point3d.o
 
 CG_hw5: $(HW5_DEPENDS)
 	$(CC) $(PROG_OPTS)
@@ -43,6 +43,9 @@ $(BIN)hw1_main.o: $(SRC)hw1_main.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)graphics.o: $(SRC)graphics.c
+	$(CC) $(BIN_OPTS)
+
+$(BIN)hierarchal.o: $(SRC)hierarchal.c
 	$(CC) $(BIN_OPTS)
 
 $(BIN)transforms.o: $(SRC)transforms.c
@@ -125,6 +128,9 @@ $(OUT)sellipsoid4_flat.iv: CG_hw4
 	./CG_hw4 $(SELLIPSOID4) -F > $@
 $(OUT)sellipsoid4_smooth.iv: CG_hw4
 	./CG_hw4 $(SELLIPSOID4) -S > $@
+
+$(OUT)robot.iv: CG_hw5
+	./CG_hw5 > $@
 
 .PHONY: clean
 clean:
