@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#include "matrix.h"
+
 typedef struct
 {
 	double x;
@@ -78,8 +80,25 @@ void point3d_fmad(point3d_t *dst, point3d_t *src, double s);
 /*
  * point3d_print_to_iv - prints the point as a white sphere in the OpenInventor file format
  * @param point - the point to print
- * @param file - the file to which to print
- * @param r - the radius for the printed spheres
+ * @param file  - the file to which to print
+ * @param r     - the radius for the printed sphere
  */
 void point3d_print_to_iv(point3d_t *point, FILE *file, double r);
+
+/*
+ * point3d_initialize_matrix - initializes a homogeneous matrix representation of the point
+ * @param m   - the matrix pointer to initialize
+ * @param pos - three element array of the coordinates
+ * @return - indication of success or failure in initialization
+ */
+status_t point3d_initialize_matrix(matrix_t **m, double *pos);
+
+/*
+ * point3d_print_matrix_to_iv - prints the given matrix/vector as a point, i.e., a white sphere,
+ * in the OpenInventor file format
+ * @param point - the point to print
+ * @param file  - the file to which to print
+ * @param r     - the radius for the printed sphere
+ */
+void point3d_print_matrix_to_iv(matrix_t *m, FILE *file, double r);
 #endif
