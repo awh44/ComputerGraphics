@@ -31,6 +31,13 @@ matrix_t *matrix_initialize(size_t rows, size_t cols);
 matrix_t *matrix_initialize_with_array(size_t rows, size_t cols, double *array);
 
 /*
+ * matrix_copy - creates a new copy of the given matrix
+ * @param orig - the matrix to copy
+ * @return - the copy of the original matrix
+ */
+matrix_t *matrix_copy(matrix_t *orig);
+
+/*
  * matrix_uninitialize - uninitializes the given matrix
  * @param m - the matrix to uninitialize
  */
@@ -53,6 +60,12 @@ void matrix_assign_from_array(matrix_t *m, double *array);
  * @param src - the source matrix from which to get the values
  */
 void matrix_assign(matrix_t *dst, matrix_t *src);
+
+/*
+ * matirx_zero - zeros the matrix out
+ * @param m - the matrix to zero
+ */
+void matrix_zero(matrix_t *m);
 
 /*
  * matrix_rows - retrieves the number of rows in the given matrix.

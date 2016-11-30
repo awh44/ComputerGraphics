@@ -42,7 +42,7 @@ success:
 	return m;
 }
 
-matrix_t *matrix_initialize_with_array(size_t rows, size_t cols, double *array)
+static matrix_t *matrix_init_uninit(size_t rows, size_t cols)
 {
 	matrix_t *m;
 	if ((m = malloc(sizeof *m)) == NULL)
@@ -54,7 +54,6 @@ matrix_t *matrix_initialize_with_array(size_t rows, size_t cols, double *array)
 	{
 		goto error1;
 	}
-	memcpy(m->elems, array, rows * cols * sizeof *m->elems);
 
 	m->rows = rows;
 	m->cols = cols;
@@ -68,7 +67,29 @@ error0:
 
 success:
 	return m;
+}
 
+matrix_t *matrix_initialize_with_array(size_t rows, size_t cols, double *array)
+{
+	matrix_t *m;
+	if ((m = matrix_init_uninit(rows, cols)) == NULL)
+	{
+		goto error0;
+	}
+	memcpy(m->elems, array, rows * cols * sizeof *m->elems);
+
+	goto success;
+
+error0:
+
+success:
+	return m;
+
+}
+
+matrix_t *matrix_copy(matrix_t *orig)
+{
+	return matrix_initialize_with_array(orig->rows, orig->cols, orig->elems);
 }
 
 void matrix_uninitialize(matrix_t *m)
@@ -85,6 +106,17 @@ void matrix_assign_from_array(matrix_t *m, double *array)
 void matrix_assign(matrix_t *dst, matrix_t *src)
 {
 	memcpy(dst->elems, src->elems, dst->rows * dst->cols * sizeof *dst->elems);
+}
+
+static inline void array_zero(double *a, size_t size)
+{
+	//This doesn't guarantee the actual value 0.0, but it's fine for my purposes
+	memset(a, 0, size * sizeof *a);
+}
+
+void matrix_zero(matrix_t *m)
+{
+	array_zero(m->elems, m->rows * m->cols);
 }
 
 size_t matrix_rows(matrix_t *m)
@@ -109,11 +141,10 @@ void matrix_set(matrix_t *m, size_t row, size_t col, double val)
 
 static void matrix_multiply_internal(double *c, double *a, double *b, size_t arows, size_t acols, size_t bcols)
 {
-	//Again, this doesn't guarantee the actual value 0.0, but that's fine for
-	//my purposes. Also, I'd need to do some benchmarking to see whether
-	//memset'ing and using this loop structure or using a "regular" i, j, k
-	//loop structure and not having to memset is better.
-	memset(c, 0, arows * bcols * sizeof *c);
+	//I'd need to do some benchmarking to see whether memset'ing and using this
+	//loop structure or using a "regular" i, j, k loop structure and not having
+	//to memset is better.
+	array_zero(c, arows * bcols);
 	for (size_t i = 0; i < arows; i++)
 	{
 		for (size_t k = 0; k < acols; k++)
