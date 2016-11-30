@@ -80,6 +80,29 @@ int main(int argc, char **argv)
 	}
 	cuboid_print_matrices_to_iv(p2pts, stdout);
 
+	translation_matrix_assign(translate, 0, 0, args.l2);
+	rotation_matrix_y_assign(rotate, args.theta3);
+	matrix_multiply(tmpmatrix1, translate, rotate);
+	matrix_multiply(tmpmatrix2, m, tmpmatrix1);
+	matrix_assign(m, tmpmatrix2);
+
+	matrix_t *p3pts[CUBOID_POINTS];
+	double ll3[] = { -0.5, -0.5, 0 };
+	double ur3[] = { 0.5, 0.5, args.l3 };
+	IF_ERROR_GOTO(cuboid_initialize_matrices(p3pts, ll3, ur3), error, exit9);
+
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_multiply(tmpvector, m, p3pts[i]);
+		matrix_assign(p3pts[i], tmpvector);
+	}
+	cuboid_print_matrices_to_iv(p3pts, stdout);
+
+exit10:
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_uninitialize(p3pts[i]);
+	}
 exit9:
 	for (size_t i = 0; i < CUBOID_POINTS; i++)
 	{
@@ -115,7 +138,7 @@ status_t parse_args(int argc, char **argv, args_t *args)
 {
 	args->theta1 = -51.0;
 	args->theta2 = 39.0;
-	args->theta3 = 65;
+	args->theta3 = 65.0;
 	args->l1 = 4.0;
 	args->l2 = 3.0;
 	args->l3 = 2.5;
