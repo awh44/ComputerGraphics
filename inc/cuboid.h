@@ -19,6 +19,7 @@ void cuboid_set_corners(cuboid_t *cuboid, point3d_t *lowleft, point3d_t *upright
 void cuboid_print_to_iv(cuboid_t *cuboid, FILE *stream);
 
 status_t cuboid_initialize_matrices(matrix_t **matrices, double *ll, double *ur);
+void cuboid_uninitialize_matrices(matrix_t **matrices);
 void cuboid_print_matrices_to_iv(matrix_t **matrices, FILE *stream);
 
 #endif

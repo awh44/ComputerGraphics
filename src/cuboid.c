@@ -187,6 +187,14 @@ success:
 	return error;
 }
 
+void cuboid_uninitialize_matrices(matrix_t **matrices)
+{
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_uninitialize(matrices[i]);
+	}
+}
+
 void cuboid_print_matrices_to_iv(matrix_t **matrices, FILE *stream)
 {
 	fprintf(stream,
