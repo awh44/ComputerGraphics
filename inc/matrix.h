@@ -46,6 +46,15 @@ void matrix_uninitialize(matrix_t *m);
 void matrix_assign_from_array(matrix_t *m, double *array);
 
 /*
+ * matrix_assign - assigns the values in the source matrix to the destination
+ * matrix. Note that no bounds checking is done so note that the matrices must
+ * match in size.
+ * @param dst - the destination matrix in which to store the values
+ * @param src - the source matrix from which to get the values
+ */
+void matrix_assign(matrix_t *dst, matrix_t *src);
+
+/*
  * matrix_rows - retrieves the number of rows in the given matrix.
  * @param m - the matrix of which to get the number of rows
  * @return - the number of rows in the matrix

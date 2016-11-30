@@ -82,6 +82,11 @@ void matrix_assign_from_array(matrix_t *m, double *array)
 	memcpy(m->elems, array, m->rows * m->cols * sizeof *m->elems);
 }
 
+void matrix_assign(matrix_t *dst, matrix_t *src)
+{
+	memcpy(dst->elems, src->elems, dst->rows * dst->cols * sizeof *dst->elems);
+}
+
 size_t matrix_rows(matrix_t *m)
 {
 	return m->rows;
@@ -104,6 +109,7 @@ void matrix_set(matrix_t *m, size_t row, size_t col, double val)
 
 static void matrix_multiply_internal(double *c, double *a, double *b, size_t arows, size_t acols, size_t bcols)
 {
+	memset(c, 0, arows * bcols * sizeof *c);
 	for (size_t i = 0; i < arows; i++)
 	{
 		for (size_t k = 0; k < acols; k++)
@@ -119,8 +125,6 @@ static void matrix_multiply_internal(double *c, double *a, double *b, size_t aro
 void matrix_multiply(matrix_t *cm, matrix_t *am, matrix_t *bm)
 {
 	matrix_multiply_internal(cm->elems, am->elems, bm->elems, am->rows, am->cols, bm->cols);
-	cm->rows = am->rows;
-	cm->cols = bm->cols;
 }
 
 status_t matrix_multiply_alias(matrix_t *cm, matrix_t *am, matrix_t *bm)
@@ -131,8 +135,6 @@ status_t matrix_multiply_alias(matrix_t *cm, matrix_t *am, matrix_t *bm)
 	INITIALIZE_OR_OUT_OF_MEM(cnew, calloc(am->rows * bm->cols, sizeof *cnew), error, exit0);
 
 	matrix_multiply_internal(cnew, am->elems, bm->elems, am->rows, am->cols, bm->cols);
-	cm->rows = am->rows;
-	cm->cols = bm->cols;
 	memcpy(cm->elems, cnew, cm->rows * cm->cols * sizeof *cm->elems);
 
 	free(cnew);
