@@ -1,7 +1,22 @@
 #ifndef _AWH44_MATH_H_
 #define _AWH44_MATH_H_
 
+#include <math.h>
 #include <stdint.h>
+
+/*
+ * TO_RAD - macro that converts to radians from degrees
+ * @param deg - the degrees value to convert
+ * @return - the equivalent value in radians
+ */
+#define TO_RAD(deg) ((M_PI * (deg)) / 180.0)
+
+/*
+ * TO_DEG - macro that converts to radians from degrees
+ * @param rad- the radians value to convert
+ * @return - the equivalent value in degrees
+ */
+#define TO_DEG(rad) ((180.0 * (rad)) / M_PI)
 
 /*
  * sgn - returns indiciation for sign of given number (-1, 0, or 1)
