@@ -111,7 +111,6 @@ static void matrix_multiply_internal(double *c, double *a, double *b, size_t aro
 			for (size_t j = 0; j < bcols; j++)
 			{
 				c[i * bcols + j] += a[i * acols + k] * b[k * bcols + j];
-				fprintf(stderr, "Finished (i,k,j) = %zu, %zu, %zu fine\n", i, k, j);
 			}
 		}
 	}
@@ -130,7 +129,6 @@ status_t matrix_multiply_alias(matrix_t *cm, matrix_t *am, matrix_t *bm)
 
 	double *cnew;
 	INITIALIZE_OR_OUT_OF_MEM(cnew, calloc(am->rows * bm->cols, sizeof *cnew), error, exit0);
-	fprintf(stderr, "am->rows == %zu, bm->cols == %zu\n", am->rows, bm->cols);
 
 	matrix_multiply_internal(cnew, am->elems, bm->elems, am->rows, am->cols, bm->cols);
 	cm->rows = am->rows;

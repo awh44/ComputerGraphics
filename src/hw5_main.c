@@ -15,14 +15,6 @@ typedef struct
 	double l1, l2, l3;
 } args_t;
 
-#define POINT_SET(point, xn, yn, zn)\
-	do\
-	{\
-		point->x = xn;\
-		point->y = yn;\
-		point->z = zn;\
-	} while (0)
-
 status_t parse_args(int argc, char **argv, args_t *args);
 void usage(char *prog);
 
@@ -37,107 +29,46 @@ int main(int argc, char **argv)
 		goto exit0;
 	}
 
-	point3d_t *points[2];
-	INITIALIZE_OR_OUT_OF_MEM(points[0], point3d_initialize(), error, exit0);
-	INITIALIZE_OR_OUT_OF_MEM(points[1], point3d_initialize(), error, exit1);
-
-	cuboid_t *p0;
-	INITIALIZE_OR_OUT_OF_MEM(p0, cuboid_initialize(), error, exit2);
-	POINT_SET(points[0], -2, -2, 0);
-	POINT_SET(points[1], 2, 2, 1);
-	cuboid_set_corners(p0, points[0], points[1]);
+	matrix_t *p0pts[CUBOID_POINTS];
+	double ll0[] = { -2, -2, 0 };
+	double ur0[] = { 2, 2, 1 };
+	IF_ERROR_GOTO(cuboid_initialize_matrices(p0pts, ll0, ur0), error, exit0);
+	cuboid_print_matrices_to_iv(p0pts, stdout);
 
 	matrix_t *translate;
-	INITIALIZE_OR_OUT_OF_MEM(translate, translation_matrix(0, 0, 1), error, exit3);
+	INITIALIZE_OR_OUT_OF_MEM(translate, translation_matrix(0, 0, 1), error, exit1);
 	matrix_t *rotate;
-	INITIALIZE_OR_OUT_OF_MEM(rotate, rotation_matrix_z(args.theta1), error, exit4);
-
+	INITIALIZE_OR_OUT_OF_MEM(rotate, rotation_matrix_z(args.theta1), error, exit2);
 	matrix_t *m;
-	INITIALIZE_OR_OUT_OF_MEM(m, matrix_initialize(4, 4), error, exit5);
+	INITIALIZE_OR_OUT_OF_MEM(m, matrix_initialize(4, 4), error, exit3);
 	matrix_multiply(m, translate, rotate);
 
-	matrix_t *p1pts[2];
-	INITIALIZE_OR_OUT_OF_MEM
-	(
-		p1pts[0],
-		matrix_initialize_with_array(4, 1, (double[]) { -0.5, -0.5, 0, 1 }),
-		error, exit6
-	);
-
-	INITIALIZE_OR_OUT_OF_MEM
-	(
-		p1pts[1],
-		matrix_initialize_with_array(4, 1, (double[]) { 0.5, 0.5, args.l1, 1 }),
-		error, exit7
-	);
-
-	matrix_t *p1ptsnew[2];
-	INITIALIZE_OR_OUT_OF_MEM(p1ptsnew[0], matrix_initialize(4, 1), error, exit8);
-	INITIALIZE_OR_OUT_OF_MEM(p1ptsnew[1], matrix_initialize(4, 1), error, exit9);
-
-	matrix_multiply(p1ptsnew[0], m, p1pts[0]);
-	matrix_multiply(p1ptsnew[1], m, p1pts[1]);
-
-	cuboid_t *p1;
-	INITIALIZE_OR_OUT_OF_MEM(p1, cuboid_initialize(), error, exit3);
-	for (size_t i = 0; i < sizeof(p1ptsnew) / sizeof(*p1ptsnew); i++)
+	matrix_t *p1pts[CUBOID_POINTS];
+	double ll[] = { -0.5, -0.5, 0 };
+	double ur[] = { 0.5, 0.5, args.l1 };
+	IF_ERROR_GOTO(cuboid_initialize_matrices(p1pts, ll, ur), error, exit4);
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
 	{
-		POINT_SET
-		(
-			points[i],
-			matrix_get(p1ptsnew[i], 0, 0),
-			matrix_get(p1ptsnew[i], 1, 0),
-			matrix_get(p1ptsnew[i], 2, 0)
-		);
+		IF_ERROR_GOTO(matrix_multiply_alias(p1pts[i], m, p1pts[i]), error, exit5);
 	}
-	cuboid_set_corners(p1, points[0], points[1]);
+	cuboid_print_matrices_to_iv(p1pts, stdout);
 
-	/*
-	cuboid_t *p2;
-	INITIALIZE_OR_OUT_OF_MEM(p2, cuboid_initialize(), error, exit4);
-	POINT_SET(lowleft, -0.5, -0.5, 0);
-	POINT_SET(upright, 0.5, 0.5, args.l2);
-	cuboid_set_corners(p2, lowleft, upright);
-
-	cuboid_t *p3;
-	INITIALIZE_OR_OUT_OF_MEM(p3, cuboid_initialize(), error, exit5);
-	POINT_SET(lowleft, -0.5, -0.5, 0);
-	POINT_SET(upright, 0.5, 0.5, args.l3);
-	cuboid_set_corners(p3, lowleft, upright);
-	*/
-	cuboid_print_to_iv(p0, stdout);
-	cuboid_print_to_iv(p1, stdout);
-	/*
-	cuboid_print_to_iv(p2, stdout);
-	cuboid_print_to_iv(p3, stdout);
-
-exit6:
-	cuboid_uninitialize(p3);
 exit5:
-	cuboid_uninitialize(p2);
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_uninitialize(p1pts[i]);
+	}
 exit4:
-	cuboid_uninitialize(p1);
-	*/
-exit10:
-	matrix_uninitialize(p1ptsnew[1]);
-exit9:
-	matrix_uninitialize(p1ptsnew[0]);
-exit8:
-	matrix_uninitialize(p1pts[1]);
-exit7:
-	matrix_uninitialize(p1pts[0]);
-exit6:
 	matrix_uninitialize(m);
-exit5:
-	matrix_uninitialize(rotate);
-exit4:
-	matrix_uninitialize(translate);
 exit3:
-	cuboid_uninitialize(p0);
+	matrix_uninitialize(rotate);
 exit2:
-	point3d_uninitialize(points[1]);
+	matrix_uninitialize(translate);
 exit1:
-	point3d_uninitialize(points[0]);
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_uninitialize(p0pts[i]);
+	}
 exit0:
 	return error;
 }
