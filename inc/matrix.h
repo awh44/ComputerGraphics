@@ -3,6 +3,11 @@
 
 #include <stdio.h>
 
+//If I make this into more of a "real" library, I should create a "matrix
+//status" enum instead. This would give a way to do bounds checking as
+//well
+#include "status.h"
+
 typedef struct matrix_t matrix_t;
 
 /*
@@ -85,7 +90,22 @@ void matrix_set(matrix_t *m, size_t row, size_t col, double val);
  * @param a - the left-hand matrix in the multiplication
  * @param b - the right-hand matri in the multiplication
  */
-void matrix_multiply(matrix_t *c, matrix_t *a, matrix_t *b); 
+void matrix_multiply(matrix_t *c, matrix_t *a, matrix_t *b);
+
+/*
+ * matrix_multiply_alis - performs a matrix multiplication between a and b and
+ * stores the value in c, i.e., c = ab. Note that no bounds checking is done,
+ * so the number of columns in a must match the number of rows in b, and the
+ * number of rows in c must match the number of rows in a and the number of
+ * columns in c must match the number of columns in b. The only difference
+ * between this function and matrix_multiply is that this one allows cm to
+ * alias am and bm
+ * @param c - the matrix in which to store the result of the multiplication
+ * @param a - the left-hand matrix in the multiplication
+ * @param b - the right-hand matri in the multiplication
+ * @return - an indication of whether the function failed or not
+ */
+status_t matrix_multiply_alias(matrix_t *cm, matrix_t *am, matrix_t *bm);
 
 /*
  * matrix_print - performs a very simple print of the matrix to the given stream

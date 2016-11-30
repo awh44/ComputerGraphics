@@ -102,29 +102,44 @@ void matrix_set(matrix_t *m, size_t row, size_t col, double val)
 	ELEMENT(m, row, col) = val;
 }
 
-void matrix_multiply(matrix_t *cm, matrix_t *am, matrix_t *bm)
+static void matrix_multiply_internal(double *c, double *a, double *b, size_t arows, size_t acols, size_t bcols)
 {
-	double *c = cm->elems;
-
-	double *a = am->elems;
-	size_t arows = am->rows, acols = am->cols;
-
-	double *b = bm->elems;
-	size_t bcols = bm->cols;
-
-	size_t i;
-	for (i = 0; i < arows; i++)
+	for (size_t i = 0; i < arows; i++)
 	{
-		size_t k;
-		for (k = 0; k < acols; k++)
+		for (size_t k = 0; k < acols; k++)
 		{
-			size_t j;
-			for (j = 0; j < bcols; j++)
+			for (size_t j = 0; j < bcols; j++)
 			{
 				c[i * bcols + j] += a[i * acols + k] * b[k * bcols + j];
+				fprintf(stderr, "Finished (i,k,j) = %zu, %zu, %zu fine\n", i, k, j);
 			}
 		}
 	}
+}
+
+void matrix_multiply(matrix_t *cm, matrix_t *am, matrix_t *bm)
+{
+	matrix_multiply_internal(cm->elems, am->elems, bm->elems, am->rows, am->cols, bm->cols);
+	cm->rows = am->rows;
+	cm->cols = bm->cols;
+}
+
+status_t matrix_multiply_alias(matrix_t *cm, matrix_t *am, matrix_t *bm)
+{
+	status_t error = SUCCESS;
+
+	double *cnew;
+	INITIALIZE_OR_OUT_OF_MEM(cnew, calloc(am->rows * bm->cols, sizeof *cnew), error, exit0);
+	fprintf(stderr, "am->rows == %zu, bm->cols == %zu\n", am->rows, bm->cols);
+
+	matrix_multiply_internal(cnew, am->elems, bm->elems, am->rows, am->cols, bm->cols);
+	cm->rows = am->rows;
+	cm->cols = bm->cols;
+	memcpy(cm->elems, cnew, cm->rows * cm->cols * sizeof *cm->elems);
+
+	free(cnew);
+exit0:
+	return error;
 }
 
 void matrix_print(matrix_t *m, FILE *stream)
