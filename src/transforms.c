@@ -30,6 +30,21 @@ void translation_matrix_assign(matrix_t *m, double x, double y, double z)
 	matrix_assign_from_array(m, array);
 }
 
+matrix_t *rotation_matrix(double t, rotatedir_t dir)
+{
+	switch (dir)
+	{
+		case ROTATE_X:
+			return rotation_matrix_x(t);
+		case ROTATE_Y:
+			return rotation_matrix_y(t);
+		case ROTATE_Z:
+			return rotation_matrix_z(t);
+		default:
+			return NULL;
+	}
+}
+
 #define ROTATE_ARRAY_X(t)\
 	double array[] =\
 	{\
