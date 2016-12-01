@@ -21,11 +21,12 @@ void usage(char *prog);
 
 void point_draw(model_t *model, matrix_t *transform)
 {
-	matrix_t *tmp = matrix_initialize(4, 1);
-	matrix_multiply(tmp, transform, model->matrices[0]);
-	matrix_assign(model->matrices[0], tmp);
-	matrix_uninitialize(tmp);
-	point3d_print_matrix_to_iv(model->matrices[0], stdout, 0.2);
+	//Currently can't return error from here anyway, so I'll just let the
+	//program segfault if it comes to that...
+	matrix_t *real_coords = matrix_initialize(4, 1);
+	matrix_multiply(real_coords, transform, model->matrices[0]);
+	point3d_print_matrix_to_iv(real_coords, stdout, 0.2);
+	matrix_uninitialize(real_coords);
 }
 
 status_t point_model_initialize(hierarchical_t *model, double *loc, double *pt)
@@ -72,14 +73,21 @@ void point_model_uninitialize(hierarchical_t *model)
 
 void cuboid_draw(model_t *model, matrix_t *transform)
 {
-	matrix_t *tmp = matrix_initialize(4, 1);
+	matrix_t *real_coords[CUBOID_POINTS];
+
 	for (size_t i = 0; i < CUBOID_POINTS; i++)
 	{
-		matrix_multiply(tmp, transform, model->matrices[i]);
-		matrix_assign(model->matrices[i], tmp);
+		//Currently can't return error from here anyway, so I'll just let the
+		//program segfault if it comes to that...
+		real_coords[i] = matrix_initialize(4, 1);
+		matrix_multiply(real_coords[i], transform, model->matrices[i]);
 	}
-	matrix_uninitialize(tmp);
-	cuboid_print_matrices_to_iv(model->matrices, stdout);
+	cuboid_print_matrices_to_iv(real_coords, stdout);
+
+	for (size_t i = 0; i < CUBOID_POINTS; i++)
+	{
+		matrix_uninitialize(real_coords[i]);
+	}
 }
 
 status_t cuboid_model_initialize(hierarchical_t *model, double *ll, double *ur, double *pt, double pr, rotatedir_t dir)
