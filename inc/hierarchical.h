@@ -9,15 +9,15 @@ typedef struct
 	matrix_t **matrices;
 } model_t;
 
-typedef struct hierarchal_t
+typedef struct hierarchical_t
 {
 	model_t model;
 	matrix_t *from_parent;
 	void (*draw)(model_t *, matrix_t *transform);
-	struct hierarchal_t *sibling;
-	struct hierarchal_t *child;
-} hierarchal_t;
+	struct hierarchical_t *sibling;
+	struct hierarchical_t *child;
+} hierarchical_t;
 
-status_t hierarchal_draw(hierarchal_t *model, matrix_t *transform);
+status_t hierarchical_draw(hierarchical_t *model, matrix_t *transform);
 
 #endif

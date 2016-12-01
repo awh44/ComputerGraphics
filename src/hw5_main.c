@@ -4,7 +4,7 @@
 
 #include "awh44_math.h"
 #include "cuboid.h"
-#include "hierarchal.h"
+#include "hierarchical.h"
 #include "matrix.h"
 #include "point3d.h"
 #include "status.h"
@@ -28,7 +28,7 @@ void point_draw(model_t *model, matrix_t *transform)
 	point3d_print_matrix_to_iv(model->matrices[0], stdout, 0.2);
 }
 
-status_t point_model_initialize(hierarchal_t *model, double *loc, double *pt)
+status_t point_model_initialize(hierarchical_t *model, double *loc, double *pt)
 {
 	status_t error = SUCCESS;
 
@@ -63,7 +63,7 @@ success:
 	return error;
 }
 
-void point_model_uninitialize(hierarchal_t *model)
+void point_model_uninitialize(hierarchical_t *model)
 {
 	matrix_uninitialize(model->model.matrices[0]);
 	free(model->model.matrices);
@@ -82,7 +82,7 @@ void cuboid_draw(model_t *model, matrix_t *transform)
 	cuboid_print_matrices_to_iv(model->matrices, stdout);
 }
 
-status_t cuboid_model_initialize(hierarchal_t *model, double *ll, double *ur, double *pt, double pr, rotatedir_t dir)
+status_t cuboid_model_initialize(hierarchical_t *model, double *ll, double *ur, double *pt, double pr, rotatedir_t dir)
 {
 	status_t error = SUCCESS;
 
@@ -122,7 +122,7 @@ success:
 	return error;
 }
 
-void cuboid_model_uninitialize(hierarchal_t *model)
+void cuboid_model_uninitialize(hierarchical_t *model)
 {
 	cuboid_uninitialize_matrices(model->model.matrices);
 	free(model->model.matrices);
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 		{ 0, 0, ur[2][2] },
 	};
 
-	hierarchal_t models[6];
+	hierarchical_t models[6];
 
 	IF_ERROR_GOTO
 	(
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 
 	matrix_t *initial_transform;
 	INITIALIZE_OR_OUT_OF_MEM(initial_transform, translation_matrix(0, 0, 0), error, exit6);
-	IF_ERROR_GOTO(hierarchal_draw(models + 0, initial_transform), error, exit7);
+	IF_ERROR_GOTO(hierarchical_draw(models + 0, initial_transform), error, exit7);
 
 exit7:
 	matrix_uninitialize(initial_transform);

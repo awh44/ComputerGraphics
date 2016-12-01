@@ -1,9 +1,9 @@
-#include "hierarchal.h"
+#include "hierarchical.h"
 
 #include "matrix.h"
 #include "status.h"
 
-status_t hierarchal_draw(hierarchal_t *model, matrix_t *transform)
+status_t hierarchical_draw(hierarchical_t *model, matrix_t *transform)
 {
 	status_t error = SUCCESS;
 	if (model == NULL)
@@ -20,12 +20,12 @@ status_t hierarchal_draw(hierarchal_t *model, matrix_t *transform)
 
 	if (model->child != NULL)
 	{
-		IF_ERROR_GOTO(hierarchal_draw(model->child, new_transform), error, exit1);
+		IF_ERROR_GOTO(hierarchical_draw(model->child, new_transform), error, exit1);
 	}
 
 	if (model->sibling != NULL)
 	{
-		IF_ERROR_GOTO(hierarchal_draw(model->sibling, transform), error, exit1);
+		IF_ERROR_GOTO(hierarchical_draw(model->sibling, transform), error, exit1);
 	}
 
 exit1:
