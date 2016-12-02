@@ -1,0 +1,36 @@
+CS 536
+Assignment 5 - Hierarchical Models
+
+The program provided here takes in a variety of command line parameters and outputs, to standard
+out in OpenInventor format, a series of cuboids representing a "robot arm" and two spheres, one
+exactly at each end of the arm.
+
+The program was written in C on Ubuntu Linux and compiled using gcc. The exact commands to do the
+compilation can be seen in the Makefile. To simply compile using the Makefile, type "make", which
+will create the CG_hw5 executable. The individual modules can be compiled individually as well,
+with different targets in the Makefile producing different object files in the bin/ directory. To
+clean up the directory, type "make clean". This will remove the executable and the files in bin/.
+To automatically generate the files given as examples on the assignment page, type
+"make outputs/sellipsoidN_type.iv", where "N" is the example number, 0-4, and "type" is either
+"flat" or "smooth."
+
+Note that the main function is located within src/hw5_main.c.
+
+The options are as follows. Note that none of them are required.
+	-t theta1
+	The rotation of the robot's first arm around the world's z-axis. Default value -51°.
+
+	-u theta2
+	The rotation of the robot's second arm around its own y-axis. Default value 39°.
+	
+	-v theta3
+	The rotation of the robot's third arm around its own y-axis. Default value 65°.
+	
+	-l length1
+	The length of the robot's first arm. Default value 4.
+
+	-m length2
+	The length of the robot's second arm. Default value 3.
+
+	-n length3
+	The length of the robot's third arm. Default value 2.5.
